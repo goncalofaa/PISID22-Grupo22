@@ -8,7 +8,7 @@ import org.eclipse.paho.client.mqttv3.*;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
+//Mongo to mqtt coleções vazias leva a erro
 public class MongoToMQTT {
 
     private static String urllocal = "mongodb://localhost:27019,localhost:25019,localhost:23019/?replicaSet=medicoespisid";
