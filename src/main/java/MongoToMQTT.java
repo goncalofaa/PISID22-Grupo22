@@ -163,7 +163,6 @@ public class MongoToMQTT {
             localMongoDatabase = localMongoClient.getDatabase(databaselocal);
 
             localcollectiont1 = localMongoDatabase.getCollection(collectiont1);
-
             localcollectionh1 = localMongoDatabase.getCollection(collectionh1);
             localcollectionl1 = localMongoDatabase.getCollection(collectionl1);
             localcollectiont2 = localMongoDatabase.getCollection(collectiont2);
