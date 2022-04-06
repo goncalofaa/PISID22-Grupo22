@@ -82,8 +82,10 @@ public class MongoToMQTT {
 
     private static MongoDatabase localMongoDatabase;
 
-    public static void main(String args[]) throws InterruptedException {
 
+    private IMqttClient mqttClient;
+    public static void main(String args[]) throws InterruptedException, MqttException {
+        localMongoClient = new MongoClient(new MongoClientURI(urllocal));
         //verificar se já existem dados no mysql
 
         //se não existirem enviar 1 doc de cada sensor
@@ -248,7 +250,7 @@ public class MongoToMQTT {
 
             //enviar para o topico
 
-            //guardar data de cada medicao enviada na vairiavel data
+            //guardar data de cada medicao enviada na variavel data
         }
 
     }
