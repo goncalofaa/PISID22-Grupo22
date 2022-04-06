@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 //A ver: casos em que a data não é válida
 //       se a data é maior
 //       primeirso docs puxados têm datas inválidas
+//       meter em formatos iguais
 
 public class MongoToMongo {
 
