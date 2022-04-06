@@ -107,7 +107,7 @@ public class MongoToMongo {
     }
 
     //Se a coleção local está vazia, vai buscar o documento mais recente da respectiva coleção na cloud
-    //Se não apenas atualiza a respctiva variável data
+    //Se não, apenas atualiza a respctiva variável data
     private static void getOneDocOnEmptyCollectionsAndUpdateDates(){
         if (t1vazia) {
             cloudMongoDatabase = cloudMongoClient.getDatabase(databasecloud);
@@ -190,7 +190,7 @@ public class MongoToMongo {
         cloudcollectiont1 = cloudMongoDatabase.getCollection(collectionsensort1);
         Document clouddocumentt1 = cloudcollectiont1.find().sort(new BasicDBObject("_id", -1)).first();
         if ((String) clouddocumentt1.get("Data") != datat1){
-            if (isBiggerThan((String) clouddocumentt1.get("Data"),datat1)){
+            if (isBiggerThanSensorT((String) clouddocumentt1.get("Data"),datat1)){
                 datat1=(String) clouddocumentt1.get("Data");
                 localcollectionl2.insertOne(clouddocumentt1);
                 System.out.println("Atualizei t1:"+datat1);
@@ -204,7 +204,7 @@ public class MongoToMongo {
         cloudcollectiont2 = cloudMongoDatabase.getCollection(collectionsensort2);
         Document clouddocumentt2 = cloudcollectiont2.find().sort(new BasicDBObject("_id", -1)).first();
         if ((String) clouddocumentt2.get("Data") != datat2){
-            if (isBiggerThan((String) clouddocumentt2.get("Data"),datat2)){
+            if (isBiggerThanSensorT((String) clouddocumentt2.get("Data"),datat2)){
                 datat2=(String) clouddocumentt2.get("Data");
                 localcollectionl2.insertOne(clouddocumentt2);
                 System.out.println("Atualizei t2:"+datat2);
@@ -218,7 +218,7 @@ public class MongoToMongo {
         cloudcollectionh1 = cloudMongoDatabase.getCollection(collectionsensorh1);
         Document clouddocumenth1 = cloudcollectionh1.find().sort(new BasicDBObject("_id", -1)).first();
         if ((String) clouddocumenth1.get("Data") != datah1){
-            if (isBiggerThan((String) clouddocumenth1.get("Data"),datah1)){
+            if (isBiggerThanSensorNonT((String) clouddocumenth1.get("Data"),datah1)){
                 datah1=(String) clouddocumenth1.get("Data");
                 localcollectionl2.insertOne(clouddocumenth1);
                 System.out.println("Atualizei h1:"+datah1);
@@ -232,7 +232,7 @@ public class MongoToMongo {
         cloudcollectionh2 = cloudMongoDatabase.getCollection(collectionsensorh2);
         Document clouddocumenth2 = cloudcollectionh2.find().sort(new BasicDBObject("_id", -1)).first();
         if ((String) clouddocumenth2.get("Data") != datah2){
-            if (isBiggerThan((String) clouddocumenth2.get("Data"),datah2)){
+            if (isBiggerThanSensorNonT((String) clouddocumenth2.get("Data"),datah2)){
                 datah2=(String) clouddocumenth2.get("Data");
                 localcollectionl2.insertOne(clouddocumenth2);
                 System.out.println("Atualizei h2:"+datah2);
@@ -246,7 +246,7 @@ public class MongoToMongo {
         cloudcollectionl1 = cloudMongoDatabase.getCollection(collectionsensorl1);
         Document clouddocumentl1 = cloudcollectionl1.find().sort(new BasicDBObject("_id", -1)).first();
         if ((String) clouddocumentl1.get("Data") != datal1){
-            if (isBiggerThan((String) clouddocumentl1.get("Data"),datal1)){
+            if (isBiggerThanSensorNonT((String) clouddocumentl1.get("Data"),datal1)){
                 datal1=(String) clouddocumentl1.get("Data");
                 localcollectionl2.insertOne(clouddocumentl1);
                 System.out.println("Atualizei l1:"+datal1);
@@ -260,7 +260,7 @@ public class MongoToMongo {
         cloudcollectionl2 = cloudMongoDatabase.getCollection(collectionsensorl2);
         Document clouddocumentl2 = cloudcollectionl2.find().sort(new BasicDBObject("_id", -1)).first();
         if ((String) clouddocumentl2.get("Data") != datal2){
-            if (isBiggerThan((String) clouddocumentl2.get("Data"),datal2)){
+            if (isBiggerThanSensorNonT((String) clouddocumentl2.get("Data"),datal2)){
                 datal2=(String) clouddocumentl2.get("Data");
                 localcollectionl2.insertOne(clouddocumentl2);
                 System.out.println("Atualizei l2:"+datal2);
@@ -273,8 +273,8 @@ public class MongoToMongo {
 
     }
 
-    //comparador de data, dá erro se a data do doc da cloud é mais recente que o local
-    private static boolean isBiggerThan(String datedoccloud, String datedoclocal){
+    //comparador de data, dá erro se a data do doc da cloud é mais recente que o local Formato Sensores T
+    private static boolean isBiggerThanSensorT(String datedoccloud, String datedoclocal){
         try {
             List datacloud= List.of(datedoccloud.split("T")[0].split("-"));
             List datalocal= List.of(datedoccloud.split("T")[0].split("-"));
@@ -301,6 +301,40 @@ public class MongoToMongo {
             return false;
         }catch (Exception e){
             System.out.println("Data No Formato Errado:"+datedoccloud);
+            //logs txt?
+            return false;
+        }
+    }
+
+    //comparador de data, dá erro se a data do doc da cloud é mais recente que o local Formato Sensores Não T
+    private static boolean isBiggerThanSensorNonT(String datedoccloud, String datedoclocal){
+        try {
+            List datacloud= List.of(datedoccloud.split(" at ")[0].split("-"));
+            List datalocal= List.of(datedoccloud.split(" at ")[0].split("-"));
+            if(Integer.parseInt((String) datacloud.get(0))>Integer.parseInt((String) datalocal.get(0))){
+                return true;
+            }
+            if(Integer.parseInt((String) datacloud.get(1))>Integer.parseInt((String) datalocal.get(1))){
+                return true;
+            }
+            if(Integer.parseInt((String) datacloud.get(2))>Integer.parseInt((String) datalocal.get(2))){
+                return true;
+            }
+            datacloud= List.of(datedoccloud.split(" at ")[1].split(":"));
+            datalocal= List.of(datedoccloud.split(" at ")[1].split(":"));
+            if(Integer.parseInt((String) datacloud.get(0))>Integer.parseInt((String) datalocal.get(0))){
+                return true;
+            }
+            if(Integer.parseInt((String) datacloud.get(1))>Integer.parseInt((String) datalocal.get(1))){
+                return true;
+            }
+            if(Integer.parseInt((String) ((String) datacloud.get(2)).replace(" GMT",""))>Integer.parseInt((String) ((String) datalocal.get(2)).replace(" GMT",""))){
+                return true;
+            }
+            return false;
+        }catch (Exception e){
+            System.out.println("Data No Formato Errado:"+datedoccloud);
+            //logs txt?
             return false;
         }
     }
