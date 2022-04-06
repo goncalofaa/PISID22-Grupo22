@@ -5,6 +5,9 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -17,7 +20,7 @@ public class MongoToMongo {
 
     //private static String database = "mongodb://java:java@localhost:27019;
     private static String urlcloud = "mongodb://aluno:aluno@194.210.86.10:27017/?authSource=admin";
-    private static String urllocal = "mongodb://localhost:27019,localhost:25019,localhost:23019/?replicaSet=medicoespisid";
+    private static String urllocal = "mongodb://localhost:27019,localhost:25019,localhost:23019/?replSet=replicaimdb";
 
     private static String databasecloud="sid2021";
     private static String databaselocal = "medicoes";
@@ -113,14 +116,15 @@ public class MongoToMongo {
         if (t1vazia) {
             cloudMongoDatabase = cloudMongoClient.getDatabase(databasecloud);
             cloudcollectiont1 = cloudMongoDatabase.getCollection(collectionsensort1);
-            Document t1aux = cloudcollectiont1.find().sort(new BasicDBObject("_id", -1)).first();
-            localcollectiont1.insertOne(t1aux);
-            datat1 = (String) t1aux.get("Data");
+            Document cloudt1aux = cloudcollectiont1.find().sort(new BasicDBObject("_id", -1)).first();
+            localcollectiont1.insertOne(cloudt1aux);
+            datat1 = (String) cloudt1aux.get("Data");
             t1vazia=false;
         }else {
             datat1=(String) localcollectiont1.find().sort(new BasicDBObject("_id", -1)).first().get("Data");
         }
         System.out.println(datat1);
+
 
         if (t2vazia) {
             cloudMongoDatabase = cloudMongoClient.getDatabase(databasecloud);
@@ -303,8 +307,21 @@ public class MongoToMongo {
             return false;
         }catch (Exception e){
             System.out.println("Data No Formato Errado:"+datedoccloud);
-            //logs txt?
+            writeAnomaliesTxt(datedoccloud);
             return false;
+        }
+    }
+
+
+    public static void writeAnomaliesTxt(String dataCLoud){
+        try {
+            FileWriter myWriter = new FileWriter("filename.txt");
+            myWriter.write(dataCLoud);
+            myWriter.close();
+            System.out.println("Successfully wrote to the file.");
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 //Mongo to mqtt coleções vazias leva a erro
 public class MongoToMQTT {
 
-    private static String urllocal = "mongodb://localhost:27019,localhost:25019,localhost:23019/?replicaSet=medicoespisid";
+    private static String urllocal = "mongodb://localhost:27019,localhost:25019,localhost:23019/?replSet=replicaimdb";
 
     private static String databaselocal = "medicoes";
 
@@ -163,7 +163,6 @@ public class MongoToMQTT {
             localMongoDatabase = localMongoClient.getDatabase(databaselocal);
 
             localcollectiont1 = localMongoDatabase.getCollection(collectiont1);
-
             localcollectionh1 = localMongoDatabase.getCollection(collectionh1);
             localcollectionl1 = localMongoDatabase.getCollection(collectionl1);
             localcollectiont2 = localMongoDatabase.getCollection(collectiont2);

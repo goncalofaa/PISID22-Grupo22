@@ -4,7 +4,7 @@ public class MqttToMysql {
 
     //tópico para cada coleção
     private static String topicot1 = "G22T1";
-    private static String topicot2 = "G22T1";
+    private static String topicot2 = "G22T2";
     private static String topicoh1 = "G22H1";
     private static String topicoh2 = "G22H2";
     private static String topicol1 = "G22L1";
