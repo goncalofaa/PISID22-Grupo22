@@ -5,9 +5,10 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.io.*;
+
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -202,6 +203,7 @@ public class MongoToMongo {
             }
             else{
                 //Dá erro no catch armazenar em txt ou usar com mais um segundo que a anterior
+                writeAnomaliesTxt(datat1);
             }
         }else {
             System.out.println("t1 não mudou");
@@ -217,9 +219,10 @@ public class MongoToMongo {
             else{
                 System.out.println("Erro else");
                 //Dá erro no catch armazenar em txt ou usar com mais um segundo que a anterior
+                writeAnomaliesTxt(datat2);
             }
         }else {
-            System.out.println("t1 não mudou");
+            System.out.println("t2 não mudou");
         }
         cloudcollectionh1 = cloudMongoDatabase.getCollection(collectionsensorh1);
         Document clouddocumenth1 = cloudcollectionh1.find().sort(new BasicDBObject("_id", -1)).first();
@@ -231,9 +234,10 @@ public class MongoToMongo {
             }
             else{
                 //Dá erro no catch armazenar em txt ou usar com mais um segundo que a anterior
+                writeAnomaliesTxt(datah1);
             }
         }else {
-            System.out.println("t1 não mudou");
+            System.out.println("h1 não mudou");
         }
         cloudcollectionh2 = cloudMongoDatabase.getCollection(collectionsensorh2);
         Document clouddocumenth2 = cloudcollectionh2.find().sort(new BasicDBObject("_id", -1)).first();
@@ -245,9 +249,10 @@ public class MongoToMongo {
             }
             else{
                 //Dá erro no catch armazenar em txt ou usar com mais um segundo que a anterior
+                writeAnomaliesTxt(datah2);
             }
         }else {
-            System.out.println("t1 não mudou");
+            System.out.println("h2 não mudou");
         }
         cloudcollectionl1 = cloudMongoDatabase.getCollection(collectionsensorl1);
         Document clouddocumentl1 = cloudcollectionl1.find().sort(new BasicDBObject("_id", -1)).first();
@@ -259,9 +264,10 @@ public class MongoToMongo {
             }
             else{
                 //Dá erro no catch armazenar em txt ou usar com mais um segundo que a anterior
+                writeAnomaliesTxt(datal1);
             }
         }else {
-            System.out.println("t1 não mudou");
+            System.out.println("l1 não mudou");
         }
         cloudcollectionl2 = cloudMongoDatabase.getCollection(collectionsensorl2);
         Document clouddocumentl2 = cloudcollectionl2.find().sort(new BasicDBObject("_id", -1)).first();
@@ -273,9 +279,10 @@ public class MongoToMongo {
             }
             else{
                 //Dá erro no catch armazenar em txt ou usar com mais um segundo que a anterior
+                writeAnomaliesTxt(datal2);
             }
         }else {
-            System.out.println("t1 não mudou");
+            System.out.println("l2 não mudou");
         }
     }
 
@@ -315,7 +322,7 @@ public class MongoToMongo {
 
     public static void writeAnomaliesTxt(String dataCLoud){
         try {
-            FileWriter myWriter = new FileWriter("filename.txt");
+            FileWriter myWriter = new FileWriter("dateAnomalies.txt");
             myWriter.write(dataCLoud);
             myWriter.close();
             System.out.println("Successfully wrote to the file.");
