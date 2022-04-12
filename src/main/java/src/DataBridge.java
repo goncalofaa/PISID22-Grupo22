@@ -1,7 +1,5 @@
 package src;
 
-
-
 //
 // Source code recreated from a .class file by IntelliJ IDEA
 // (powered by FernFlower decompiler)
@@ -97,10 +95,21 @@ public class DataBridge implements MqttCallback {
     static String mongo_replica_to = new String();
     static String mongo_address_to = new String();
     static String mongo_database_to = new String();
-    static String mongo_collection_to = new String();
+    static String mongo_collection_to_t1 = new String();
+    static String mongo_collection_to_t2 = new String();
+    static String mongo_collection_to_h1 = new String();
+    static String mongo_collection_to_h2 = new String();
+    static String mongo_collection_to_l1 = new String();
+    static String mongo_collection_to_l2 = new String();
     static String mongo_authentication_to = new String();
-    static String zona = new String();
-    static String sensor = new String();
+    static String zona1 = new String();
+    static String zona2 = new String();
+    static String sensorL1 = new String();
+    static String sensorL2 = new String();
+    static String sensorT1 = new String();
+    static String sensorT2 = new String();
+    static String sensorH1 = new String();
+    static String sensorH2 = new String();
     static String seconds_wait_sensor = new String();
     static String limiteInferior = new String();
     static String limiteSuperior = new String();
@@ -110,8 +119,17 @@ public class DataBridge implements MqttCallback {
     static String medicoesEntreSalto = new String();
     static String valorSalto = new String();
     static String medicoesSalto = new String();
+    static String zonaaux;
+    static String sensoraux;
+    static String colecaoaux;
 
-    public DataBridge() {
+
+    public DataBridge(){}
+
+    public DataBridge(String zona, String sensor, String colecao) {
+        zonaaux=zona;
+        sensoraux=sensor;
+        colecaoaux=colecao;
     }
 
     private static void createWindow() {
@@ -135,7 +153,7 @@ public class DataBridge implements MqttCallback {
         });
     }
 
-    public static void main(String[] var0) {
+    public void start() {
         createWindow();
 
         try {
@@ -175,11 +193,22 @@ public class DataBridge implements MqttCallback {
             mongo_user_to = var1.getProperty("mongo_user_to");
             mongo_password_to = var1.getProperty("mongo_password_to");
             mongo_database_to = var1.getProperty("mongo_database_to");
-            mongo_collection_to = var1.getProperty("mongo_collection_to");
+            mongo_collection_to_t1 = var1.getProperty("mongo_collection_to_t1");
+            mongo_collection_to_t2 = var1.getProperty("mongo_collection_to_t2");
+            mongo_collection_to_h1 = var1.getProperty("mongo_collection_to_h1");
+            mongo_collection_to_h2 = var1.getProperty("mongo_collection_to_h2");
+            mongo_collection_to_l1 = var1.getProperty("mongo_collection_to_l1");
+            mongo_collection_to_l2 = var1.getProperty("mongo_collection_to_l2");
             mongo_replica_to = var1.getProperty("mongo_replica_to");
             mongo_authentication_to = var1.getProperty("mongo_authentication_to");
-            zona = var1.getProperty("Zona");
-            sensor = var1.getProperty("Sensor");
+            zona1 = var1.getProperty("Zona1");
+            zona2 = var1.getProperty("Zona2");
+            sensorL1 = var1.getProperty("SensorL1");
+            sensorL2 = var1.getProperty("SensorL2");
+            sensorT1 = var1.getProperty("SensorT1");
+            sensorT2 = var1.getProperty("SensorT2");
+            sensorH1 = var1.getProperty("SensorH1");
+            sensorH2 = var1.getProperty("SensorH2");
             seconds_wait_sensor = var1.getProperty("seconds_wait_sensor");
             valorInicial = var1.getProperty("ValorInicial");
             limiteInferior = var1.getProperty("LimiteInferior");
@@ -219,7 +248,7 @@ public class DataBridge implements MqttCallback {
         }
 
         if (Origin.equals("Mongo")) {
-            (new DataBridge()).ReadMongoFrom();
+            //(new DataBridge()).ReadMongoFrom();
         }
 
         if (Origin.equals("Mysql")) {
@@ -227,7 +256,7 @@ public class DataBridge implements MqttCallback {
         }
 
         if (Origin.equals("Sensor")) {
-            (new DataBridge()).generateData();
+            (new DataBridge()).generateData(zonaaux,sensoraux,colecaoaux);
         }
 
     }
@@ -336,7 +365,7 @@ public class DataBridge implements MqttCallback {
 
     }
 
-    public void ReadMongoFrom() {
+    public void ReadMongoFrom(String colecao) {
         new String();
         MongoDatabase var2 = mongoClient_from.getDatabase(mongo_database_from);
         MongoCollection var3 = var2.getCollection(mongo_collection_from);
@@ -364,7 +393,7 @@ public class DataBridge implements MqttCallback {
                 }
 
                 if (Destination_Mongo.equals("true")) {
-                    this.WriteMongoTo(var11);
+                    this.WriteMongoTo(var11,colecao);
                 }
 
                 if (Destination_Cloud.equals("true")) {
@@ -410,7 +439,7 @@ public class DataBridge implements MqttCallback {
             if (Origin.equals("Cloud")) {
                 if (Destination_Mongo.equals("true")) {
                     DBObject var3 = (DBObject)JSON.parse(var2.toString());
-                    this.WriteMongoTo(new Document(var3.toMap()));
+                    //this.WriteMongoTo(new Document(var3.toMap()));
                 }
 
                 if (Destination_Cloud.equals("true")) {
@@ -492,7 +521,7 @@ public class DataBridge implements MqttCallback {
                 }
 
                 if (Destination_Mongo.equals("true")) {
-                    this.WriteMongoTo(var15);
+                    //this.WriteMongoTo(var15);
                 }
 
                 if (Destination_Cloud.equals("true")) {
@@ -509,7 +538,7 @@ public class DataBridge implements MqttCallback {
 
     }
 
-    public void generateData() {
+    public void generateData(String zona, String sensor, String colecao) {
         double var1 = 0.0D;
         double var3 = Double.parseDouble(variacao);
         double var5 = Double.parseDouble(medicoesEntreSalto);
@@ -546,7 +575,7 @@ public class DataBridge implements MqttCallback {
 
                 var22 = (DBObject)JSON.parse(var12);
                 if (Destination_Mongo.equals("true")) {
-                    this.WriteMongoTo(new Document(var22.toMap()));
+                    this.WriteMongoTo(new Document(var22.toMap()),colecao);
                 }
 
                 if (Destination_Cloud.equals("true")) {
@@ -616,7 +645,7 @@ public class DataBridge implements MqttCallback {
 
                 var22 = (DBObject)JSON.parse(var12);
                 if (Destination_Mongo.equals("true")) {
-                    this.WriteMongoTo(new Document(var22.toMap()));
+                    this.WriteMongoTo(new Document(var22.toMap()),colecao);
                 }
 
                 if (Destination_Cloud.equals("true")) {
@@ -637,9 +666,11 @@ public class DataBridge implements MqttCallback {
         }
     }
 
-    private void WriteMongoTo(Document var1) {
+    private void WriteMongoTo(Document var1, String colecao) {
         DB var3 = mongoClient_to.getDB(mongo_database_to);
-        DBCollection var2 = var3.getCollection(mongo_collection_to);
+        //System.out.println(colecao);
+        //System.out.println(var3);
+        DBCollection var2 = var3.getCollection(colecao);
         new Document();
         new String();
         String var5 = var1.toJson();
@@ -660,11 +691,11 @@ public class DataBridge implements MqttCallback {
 
     }
 
-    private void WriteMongoTo2(DBObject var1) {
+    private void WriteMongoTo2(DBObject var1,String colecao) {
         System.out.println("****");
         System.out.println(var1);
         DB var3 = mongoClient_to.getDB(mongo_database_to);
-        DBCollection var2 = var3.getCollection(mongo_collection_to);
+        DBCollection var2 = var3.getCollection(colecao);
 
         try {
             var2.insert(new DBObject[]{var1});
@@ -747,7 +778,7 @@ public class DataBridge implements MqttCallback {
 
         try {
             Statement var16 = connTo.createStatement();
-            int var17 = new Integer(var16.executeUpdate(var9));
+            //int var17 = new Integer(var16.executeUpdate(var9));
             var16.close();
         } catch (Exception var15) {
             System.out.println("Error Inserting in the database . " + var15);
