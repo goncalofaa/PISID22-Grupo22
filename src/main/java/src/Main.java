@@ -8,12 +8,9 @@ public class Main {
         DataGenerator db2= new DataGenerator("Zona2","SensorT2","22t2");
         Thread t2 = new Thread(db2);
         t2.start();
-        /*DataGenerator db= new DataGenerator("Zona1","SensorT1","22t1");
+        DataGenerator db= new DataGenerator("Zona1","SensorT1","22t1");
         Thread t = new Thread(db);
-        t.start();*/
-        /*DataGenerator db2= new DataGenerator("Zona2","SensorT2","22t2");
-        Thread t2 = new Thread(db2);
-        t2.start();
+        t.start();
         DataGenerator db3= new DataGenerator("Zona1","SensorL1","22l1");
         Thread t3 = new Thread(db3);
         t3.start();
@@ -25,7 +22,7 @@ public class Main {
         t5.start();
         DataGenerator db6= new DataGenerator("Zona2","SensorH2","22h2");
         Thread t6 = new Thread(db6);
-        t6.start();*/
+        t6.start();
 
 
     }

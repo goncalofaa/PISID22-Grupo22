@@ -21,7 +21,7 @@ public class MqttToMysql {
     public static void main(String args[]){
         SensorDataHandler sdht1 = new SensorDataHandler(topicot1);
         sdht1.start();
-        SensorDataHandler sdht2 = new SensorDataHandler(topicot2);
+      /*  SensorDataHandler sdht2 = new SensorDataHandler(topicot2);
         sdht2.start();
         SensorDataHandler sdhh1 = new SensorDataHandler(topicoh1);
         sdhh1.start();
@@ -31,5 +31,7 @@ public class MqttToMysql {
         sdhl1.start();
         SensorDataHandler sdhl2 = new SensorDataHandler(topicol2);
         sdhl2.start();
+    */
     }
+
 }

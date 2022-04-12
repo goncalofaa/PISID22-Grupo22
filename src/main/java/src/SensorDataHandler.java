@@ -7,8 +7,9 @@ import java.util.UUID;
 public class SensorDataHandler extends Thread implements MqttCallback{
 
     private String topicosensor;
-    static String cloudServer = "tcp://broker.mqtt-dashboard.com:1883";
-    static IMqttClient mqttClient;
+    //static String cloudServer = "tcp://broker.mqtt-dashboard.com:1883";
+    static String cloudServer = "tcp://broker.hivemq.com:1883";
+    private IMqttClient mqttClient;
 
 
     public SensorDataHandler(String topicosensor){
@@ -24,16 +25,19 @@ public class SensorDataHandler extends Thread implements MqttCallback{
             options.setAutomaticReconnect(true);
             options.setCleanSession(true);
             options.setConnectionTimeout(10);
+            mqttClient.setCallback(this);
             mqttClient.connect(options);
-            new SensorDataHandler(this.topicosensor).subscribe();
+            subscribe();
+
         } catch (MqttException e) {
             e.printStackTrace();
         }
     }
 
     private void subscribe() throws MqttException {
-        mqttClient.setCallback(this);
+        System.out.println(" Conectou !! ");
         mqttClient.subscribe(this.topicosensor);
+
     }
 
     @Override
