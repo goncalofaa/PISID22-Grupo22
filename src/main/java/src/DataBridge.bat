@@ -1,0 +1,1 @@
+java -cp .\org.eclipse.paho.client.mqttv3-1.1.0.jar;.\mongo-java-driver-3.6.3.jar;.\java-json.jar;.\mariadb-java-client-2.7.3.jar;.\mysql-connector-java-8.0.18.jar;.\gson-1.4.jar;. DataBridge

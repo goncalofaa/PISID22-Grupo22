@@ -15,7 +15,13 @@ public class MQTTToMySQLTest implements MqttCallback{
 
     // MQTT
     static String cloudServer = "tcp://broker.mqtt-dashboard.com:1883";
-    static String cloudTopic = "sid2022_g22";
+    static String mqttopict1 = "G22T1";
+    static String mqttopict2 = "G22T2";
+    static String mqttopich1 = "G22H1";
+    static String mqttopich2 = "G22H2";
+    static String mqttopicl1 = "G22L1";
+    static String mqttopicl2 = "G22L2";
+
     static IMqttClient mqttClient;
     // MySQL
     static String db = "monitorizacao";
@@ -65,8 +71,12 @@ public class MQTTToMySQLTest implements MqttCallback{
 
     public void subscribe() throws MqttSecurityException, MqttException {
         mqttClient.setCallback(this);
-        mqttClient.subscribe(cloudTopic);
-
+        mqttClient.subscribe(mqttopict1);
+        mqttClient.subscribe(mqttopict2);
+        mqttClient.subscribe(mqttopich1);
+        mqttClient.subscribe(mqttopich2);
+        mqttClient.subscribe(mqttopicl1);
+        mqttClient.subscribe(mqttopicl2);
     }
 
     @Override
