@@ -98,7 +98,7 @@ public class MongoToMongo {
         	mongoToMongo.insertCollection(localMongoDatabase,"Z2","T2", collectionsensort2, cloudMongoCollection);
         	mongoToMongo.insertCollection(localMongoDatabase,"Z2","H2", collectionsensorh2, cloudMongoCollection);
         	mongoToMongo.insertCollection(localMongoDatabase,"Z2","L2", collectionsensorl2, cloudMongoCollection);
-            TimeUnit.SECONDS.sleep(10);
+            TimeUnit.SECONDS.sleep(5);
         }
 
     }
