@@ -39,14 +39,6 @@ public class MongoToMQTTTest {
     private static String collectionl1 = "l1";
     private static String collectionl2 = "l2";
 
-    // coleÃ§Ãµes locais
-    private static MongoCollection<Document> localcollectiont1;
-    private static MongoCollection<Document> localcollectiont2;
-    private static MongoCollection<Document> localcollectionh1;
-    private static MongoCollection<Document> localcollectionh2;
-    private static MongoCollection<Document> localcollectionl1;
-    private static MongoCollection<Document> localcollectionl2;
-
     //Últimas datas de cada coleção
     private static String datat1;
     private static String datat2;
