@@ -26,6 +26,5 @@ public class MqttToMysql {
     	new ThreadSensor(msConnection, collectionsensort2).start();
     	new ThreadSensor(msConnection, collectionsensorh2).start();
     	new ThreadSensor(msConnection, collectionsensorl2).start();
-
     }
 }

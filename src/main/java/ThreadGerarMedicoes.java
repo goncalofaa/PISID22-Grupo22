@@ -5,16 +5,17 @@ import java.util.Random;
 import org.bson.Document;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 public class ThreadGerarMedicoes extends Thread{
 	private String zona;
 	private String sensor;
 	private MongoCollection<Document> cloudCollectionDoc;
 	
-    public ThreadGerarMedicoes(String zona, String sensor, MongoCollection<Document> cloudCollectionDoc) {
+    public ThreadGerarMedicoes(String zona, String sensor, MongoDatabase cloudMongoDatabase ,String cloudCollectionDoc) {
 		this.zona = zona;
 		this.sensor = sensor;
-		this.cloudCollectionDoc = cloudCollectionDoc;
+		this.cloudCollectionDoc = cloudMongoDatabase.getCollection(cloudCollectionDoc);
 	}
 
 	@Override
@@ -31,7 +32,8 @@ public class ThreadGerarMedicoes extends Thread{
 			
 			Random rnd = new Random();
 			double temp =  10 + rnd.nextDouble() * 15.0;
-			String tempString = String.format("%04.2f",temp);
+			String tempString = String.format("%04.1f",temp);
+			tempString = tempString.replace(",", ".");
 			
 			SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 			Date date = new Date(System.currentTimeMillis());
