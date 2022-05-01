@@ -27,22 +27,26 @@ public class MongoToMongo {
     private static String collectionsensorh2 = "sensorh2";
     private static String collectionsensorl1 = "sensorl1";
     private static String collectionsensorl2 = "sensorl2";
+    private static String collectionsensorCloud = "medicoes2022";
     private static int MAXDOCUMENTS = 12;
     
-	public void insertCollection(MongoDatabase localMongoDatabase, String collection, MongoDatabase cloudMongoDatabase) {
+	public void insertCollection(MongoDatabase localMongoDatabase, String collection, MongoDatabase cloudMongoDatabase, String collectionsensorCloud, String zona, String sensor) {
 		MongoCollection<Document> localCollection = localMongoDatabase.getCollection(collection);
-		MongoCollection<Document> cloudMongoCollection = cloudMongoDatabase.getCollection(collection);
+		MongoCollection<Document> cloudMongoCollection = cloudMongoDatabase.getCollection(collectionsensorCloud);
 		List<Document> listat1 = new ArrayList<Document>();
+		
+		BasicDBObject criteria = new BasicDBObject();
+		criteria.append("Zona", zona);
+		criteria.append("Sensor", sensor);
 		
 		if(localCollection.countDocuments() == 0) {
 			localCollection = localMongoDatabase.getCollection(collection);
-			for (Document doc : cloudMongoCollection.find().sort(new BasicDBObject("_id",-1)).limit(MAXDOCUMENTS)) {
+			for (Document doc : cloudMongoCollection.find(criteria).sort(new BasicDBObject("_id",-1)).limit(MAXDOCUMENTS)) {
 				if (doc != null && !doc.isEmpty())
 					listat1.add(doc);
 			}
 		}else {
 			Document recentDoc = localCollection.find().sort(new BasicDBObject("_id",-1)).first();
-			BasicDBObject criteria = new BasicDBObject();
 			criteria.append("Data", new BasicDBObject("$gt", recentDoc.getString("Data")));
 			
 			for (Document doc : cloudMongoCollection.find(criteria)) {
@@ -67,12 +71,12 @@ public class MongoToMongo {
 	    MongoDatabase cloudMongoDatabase = cloudMongoClient.getDatabase(database);
 	    MongoToMongo mongoToMongo = new MongoToMongo();
         while (true){
-        	mongoToMongo.insertCollection(localMongoDatabase, collectionsensort1, cloudMongoDatabase);
-        	mongoToMongo.insertCollection(localMongoDatabase, collectionsensorh1, cloudMongoDatabase);
-        	mongoToMongo.insertCollection(localMongoDatabase, collectionsensorl1, cloudMongoDatabase);
-        	mongoToMongo.insertCollection(localMongoDatabase, collectionsensort2, cloudMongoDatabase);
-        	mongoToMongo.insertCollection(localMongoDatabase, collectionsensorh2, cloudMongoDatabase);
-        	mongoToMongo.insertCollection(localMongoDatabase, collectionsensorl2, cloudMongoDatabase);
+        	mongoToMongo.insertCollection(localMongoDatabase, collectionsensort1, cloudMongoDatabase, collectionsensorCloud, "Z1","T1");
+        	mongoToMongo.insertCollection(localMongoDatabase, collectionsensorh1, cloudMongoDatabase, collectionsensorCloud, "Z1","H1");
+        	mongoToMongo.insertCollection(localMongoDatabase, collectionsensorl1, cloudMongoDatabase, collectionsensorCloud, "Z1","L1");
+        	mongoToMongo.insertCollection(localMongoDatabase, collectionsensort2, cloudMongoDatabase, collectionsensorCloud, "Z2","T2");
+        	mongoToMongo.insertCollection(localMongoDatabase, collectionsensorh2, cloudMongoDatabase, collectionsensorCloud, "Z2","H2");
+        	mongoToMongo.insertCollection(localMongoDatabase, collectionsensorl2, cloudMongoDatabase, collectionsensorCloud, "Z2","L2");
             TimeUnit.SECONDS.sleep(5);
         }
     }

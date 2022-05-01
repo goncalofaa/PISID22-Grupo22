@@ -1,6 +1,8 @@
 
 public class Cultura {
 	
+	private int idCultura;
+	private int idUtilizador;
 	private double limiteLuzMax;
 	private double limiteLuzMin;
 	private double limiteHumMax;
@@ -15,12 +17,18 @@ public class Cultura {
 	private double avisoTempMin;
 	private int intervaloAviso;
 	
-	public Cultura() {}
-	
-	public Cultura(double limiteLuzMax, double limiteLuzMin, double limiteHumMax, double limiteHumMin,
-			double limiteTempMax, double limiteTempMin, double avisoLuzMax, double avisoLuzMin, double avisoHumMax,
-			double avisoHumMin, double avisoTempMax, double avisoTempMin, int intervaloAviso) {
+	public Cultura() {
 		super();
+	}
+	
+	
+
+	public Cultura(int idCultura, int idUtilizador, double limiteLuzMax, double limiteLuzMin, double limiteHumMax,
+			double limiteHumMin, double limiteTempMax, double limiteTempMin, double avisoLuzMax, double avisoLuzMin,
+			double avisoHumMax, double avisoHumMin, double avisoTempMax, double avisoTempMin, int intervaloAviso) {
+		super();
+		this.idCultura = idCultura;
+		this.idUtilizador = idUtilizador;
 		this.limiteLuzMax = limiteLuzMax;
 		this.limiteLuzMin = limiteLuzMin;
 		this.limiteHumMax = limiteHumMax;
@@ -139,4 +147,21 @@ public class Cultura {
 	public void setIntervaloAviso(int intervaloAviso) {
 		this.intervaloAviso = intervaloAviso;
 	}
+
+	public int getIdCultura() {
+		return idCultura;
+	}
+
+	public void setIdCultura(int idCultura) {
+		this.idCultura = idCultura;
+	}
+
+	public int getIdUtilizador() {
+		return idUtilizador;
+	}
+
+	public void setIdUtilizador(int idUtilizador) {
+		this.idUtilizador = idUtilizador;
+	}
+	
 }

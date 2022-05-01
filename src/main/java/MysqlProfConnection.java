@@ -8,18 +8,18 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
-public class MysqlConnection {
+public class MysqlProfConnection {
 	
 	private String db = "monitorizacao";
-	private String DBuser = "2022";
-	private String DBpass = "abc";
+	private String DBuser = "root";
+	private String DBpass = "";
 	private Connection connectionSQL;
 	private DateFormat dateFormatSQL;
 	
-	public MysqlConnection() {
+	public MysqlProfConnection(String db, String DBuser, String DBpass, String ip) {
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			connectionSQL = DriverManager.getConnection("jdbc:mysql://localhost/" + db + "?useTimezone=true&serverTimezone=UTC", DBuser, DBpass);
+			connectionSQL = DriverManager.getConnection("jdbc:mysql://" + ip + "/" + db + "?useTimezone=true&serverTimezone=UTC", DBuser, DBpass);
 			dateFormatSQL = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		}catch (SQLException e) {
 			e.printStackTrace();
