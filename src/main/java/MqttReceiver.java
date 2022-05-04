@@ -42,8 +42,7 @@ public class MqttReceiver implements MqttCallback {
 
 	@Override
 	public void connectionLost(Throwable arg0) {
-		// TODO Auto-generated method stub
-		
+		System.out.println("Perdi a conexão");		
 	}
 
 	@Override

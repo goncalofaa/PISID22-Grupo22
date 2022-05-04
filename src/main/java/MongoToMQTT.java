@@ -30,6 +30,8 @@ public class MongoToMQTT {
     private static String collectionh2 = "sensorh2";
     private static String collectionl1 = "sensorl1";
     private static String collectionl2 = "sensorl2";
+    private static final int TEMPOENVIO = 5100;
+    
     
     public MongoToMQTT() {
 		String clientId = UUID.randomUUID().toString();
@@ -115,6 +117,7 @@ public class MongoToMQTT {
 				recentDoc.getString("Sensor") + ";" + "Data:" + recentDoc.getString("Data") + ";" +
 					"Medicao:" + recentDoc.getString("Medicao");
 		byte[] payload = rawMsg.getBytes();
+		System.out.println(rawMsg);
 		
 	    MqttMessage msg = new MqttMessage(payload);
 	    msg.setQos(0);
@@ -145,7 +148,7 @@ public class MongoToMQTT {
 			mongoMqtt.publishDocument(collectionl1,"L1", localMongoDatabase);
 			mongoMqtt.publishDocument(collectionl2,"L2", localMongoDatabase);
 			
-			Thread.sleep(5000);
+			Thread.sleep(TEMPOENVIO);
 		}
 	}
 }

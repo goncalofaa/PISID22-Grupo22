@@ -76,7 +76,7 @@ public class ThreadSensor extends Thread{
 	    			String hora = dataHora.split(";")[1];
 	    			data = anoMesDia + " " + hora;
 	    			String leitura = messageSplit[3].split(":")[1].replace(",", ".");
-	    	        System.out.println("LEITURA: " + leitura);
+//	    	        System.out.println("LEITURA: " + leitura);
 	    			// Deve estar errado, but i tried
 	    			//se calhar não é preciso percurrer sempre isto pq as margens não vao estar sempre a ser alteradas e também a zona é sempre a mesma.
 	    			
@@ -102,7 +102,7 @@ public class ThreadSensor extends Thread{
 	    			double dado = arredondamento(Double.parseDouble(leitura)); 
 	    			leitura = Double.toString(dado);
 	    			verificar_outlier(leitura);
-	    			System.out.println("LEITURA COM ARREDONDAMENTO: " + leitura);
+//	    			System.out.println("LEITURA COM ARREDONDAMENTO: " + leitura);
 	    			//Connection toMySql2 = (Connection) msConnection; //deve dar com a conecção em cima
 	    			st = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM cultura");
 	    			//st.setInt(1, sensorZona);
@@ -150,7 +150,7 @@ public class ThreadSensor extends Thread{
 	    			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
     			}
     			
-				Thread.sleep(100);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			} catch (SQLException e) {
@@ -346,68 +346,104 @@ public class ThreadSensor extends Thread{
 	Timestamp Intvermelho;
 	
 	private void alertavermelho(Cultura cultura, double medicao) throws InterruptedException, SQLException {
-		datAmarelo = null;
-		datlaranja = null;
-		if(datvermelho == null) {
-			datvermelho = new Timestamp(System.currentTimeMillis());
-			Intvermelho = new Timestamp(System.currentTimeMillis() + (cultura.getIntervaloAviso() * 1000)); // vezes 60
-			String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "3" + "' ,'" + cultura + "','" + "Alerta vermelho do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + data + "');";
-			System.err.println(query);
-			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
-		}
-		else {
-			datvermelho = new Timestamp(System.currentTimeMillis());
-			if(datvermelho.after(Intvermelho)) {
-				String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "3" + "' ,'" + cultura + "','" + "Alerta vermelho do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + data + "');";
+		PreparedStatement st3 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM alerta WHERE Sensor = ? AND IDCultura = ? ORDER BY HoraEscrita DESC LIMIT 1");
+		st3.setString(1, sensor);
+		st3.setInt(2, cultura.getIdCultura());
+		ResultSet rs3 = st3.executeQuery();
+		Timestamp dataatualPT = new Timestamp(System.currentTimeMillis());;
+		Timestamp dataatual = new Timestamp(System.currentTimeMillis() + (1000 * 60 * 60));;
+		if(rs3.next()) {
+			Timestamp ultimoaviso = rs3.getTimestamp("HoraEscrita");
+			int ultimoTipoAviso = rs3.getInt("TipoAlerta");
+			if(ultimoTipoAviso == 3) {
+				System.out.println("dataAtual = " + dataatual+ " "+cultura.getIdCultura());
+				System.out.println("ultimo aviso = " + ultimoaviso+ " "+cultura.getIdCultura());
+				Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (cultura.getIntervaloAviso() * 1000)); // vezes 60
+				System.out.println("intervalo aviso = " + intervaloAviso + " "+cultura.getIdCultura());
+				if(dataatual.after(intervaloAviso)) {
+					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "3" + "' ,'" + cultura + "','" + "Alerta vermelho do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
+					System.err.println(query);
+					connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
+				}
+			}
+			else {
+				String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "3" + "' ,'" + cultura + "','" + "Alerta vermelho do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
 				System.err.println(query);
 				connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
-			Intvermelho = new Timestamp(System.currentTimeMillis() + (cultura.getIntervaloAviso() * 1000));
 			}
+		}
+		else {
+			String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "3" + "' ,'" + cultura + "','" + "Alerta vermelho do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
+			System.err.println(query);
+			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 		}
 	}
 
 	private void alertalaranja(Cultura cultura, double medicao) throws InterruptedException, SQLException {
-		datAmarelo = null;
-		datvermelho = null;
-		if(datlaranja == null) {
-		
-			datlaranja = new Timestamp(System.currentTimeMillis());
-			Intlaranja = new Timestamp(System.currentTimeMillis() + (cultura.getIntervaloAviso() * 1000)); // vezes 60
-			String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "2" + "' ,'" + cultura + "','" + "Alerta laranja do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + data + "');";
-			System.err.println(query);
-			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
-		}
-		else {
-		
-			datlaranja = new Timestamp(System.currentTimeMillis());
-
-			if(datlaranja.after(Intlaranja)) {
-				String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "2" + "' ,'" + cultura + "','" + "Alerta laranja do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + data + "');";
+		PreparedStatement st3 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM alerta WHERE Sensor = ? AND IDCultura = ? ORDER BY HoraEscrita DESC LIMIT 1");
+		st3.setString(1, sensor);
+		st3.setInt(2, cultura.getIdCultura());
+		ResultSet rs3 = st3.executeQuery();
+		Timestamp dataatualPT = new Timestamp(System.currentTimeMillis());;
+		Timestamp dataatual = new Timestamp(System.currentTimeMillis() + (1000 * 60 * 60));;
+		if(rs3.next()) {
+			Timestamp ultimoaviso = rs3.getTimestamp("HoraEscrita");
+			int ultimoTipoAviso = rs3.getInt("TipoAlerta");
+			if(ultimoTipoAviso == 2) {
+				System.out.println("dataAtual = " + dataatual+ " "+cultura.getIdCultura());
+				System.out.println("ultimo aviso = " + ultimoaviso+ " "+cultura.getIdCultura());
+				Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (cultura.getIntervaloAviso() * 1000)); // vezes 60
+				System.out.println("intervalo aviso = " + intervaloAviso + " "+cultura.getIdCultura());
+				if(dataatual.after(intervaloAviso)) {
+					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "2" + "' ,'" + cultura + "','" + "Alerta laranja do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT  + "');";
+					System.err.println(query);
+					connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
+				}
+			}
+			else {
+				String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "2" + "' ,'" + cultura + "','" + "Alerta laranja do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT  + "');";
 				System.err.println(query);
 				connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
-				Intlaranja = new Timestamp(System.currentTimeMillis() + (cultura.getIntervaloAviso() * 1000));
 			}
+		}
+		else {
+			String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "2" + "' ,'" + cultura + "','" + "Alerta laranja do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT  + "');";
+			System.err.println(query);
+			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 		}
 	}
 	
-	private void alertaamarelo(Cultura cultura, double medicao) throws InterruptedException, SQLException {
-		datlaranja = null;
-		datvermelho = null;
-		if(datAmarelo == null) {
-			datAmarelo = new Timestamp(System.currentTimeMillis());
-			IntAmarelo = new Timestamp(System.currentTimeMillis() + (cultura.getIntervaloAviso() * 1000)); // vezes 60
-			String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + data + "');";
-			System.err.println(query);
-			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
-		}
-		else {
-			datAmarelo = new Timestamp(System.currentTimeMillis());
-			if(datAmarelo.after(IntAmarelo)) {
-				String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + data + "');";
+	private void alertaamarelo(Cultura cultura, double medicao) throws InterruptedException, SQLException {	
+		PreparedStatement st3 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM alerta WHERE Sensor = ? AND IDCultura = ? ORDER BY HoraEscrita DESC LIMIT 1");
+		st3.setString(1, sensor);
+		st3.setInt(2, cultura.getIdCultura());
+		ResultSet rs3 = st3.executeQuery();
+		Timestamp dataatualPT = new Timestamp(System.currentTimeMillis());;
+		Timestamp dataatual = new Timestamp(System.currentTimeMillis() + (1000 * 60 * 60));
+		if(rs3.next()) {
+			Timestamp ultimoaviso = rs3.getTimestamp("HoraEscrita");
+			int ultimoTipoAviso = rs3.getInt("TipoAlerta");
+			if(ultimoTipoAviso == 1) {
+				System.out.println("dataAtual = " + dataatual+ " "+cultura.getIdCultura());
+				System.out.println("ultimo aviso = " + ultimoaviso+ " "+cultura.getIdCultura());
+				Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (cultura.getIntervaloAviso() * 1000 )); // vezes 60
+				System.out.println("intervalo aviso = " + intervaloAviso + " "+cultura.getIdCultura());
+				if(dataatual.after(intervaloAviso)) {
+					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
+					System.err.println(query);
+					connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
+				}
+			}
+			else {
+				String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
 				System.err.println(query);
 				connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
-				IntAmarelo = new Timestamp(System.currentTimeMillis() + (cultura.getIntervaloAviso() * 1000));
 			}
+		}
+		else {
+			String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
+			System.err.println(query);
+			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 		}
 	}
 }
