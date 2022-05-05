@@ -64,22 +64,22 @@ public class MqttToMysql {
     	ResultSet rs = st.executeQuery();
 		while(rs.next()) {
 			if(rs.getInt("idzona") == 1 && rs.getString("tipo").equals("H"))  {
-				new ThreadSensor(connectionLocal, collectionsensorh1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior")).start();
+				new ThreadSensor(connectionLocal, collectionsensorh1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"H1","1").start();
 			}
 			if(rs.getInt("idzona") == 1 && rs.getString("tipo").equals("L"))  {
-				new ThreadSensor(connectionLocal, collectionsensorl1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior")).start();
+				new ThreadSensor(connectionLocal, collectionsensorl1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"L1","1").start();
 			} 
 			if(rs.getInt("idzona") == 1 && rs.getString("tipo").equals("T"))  {
-				new ThreadSensor(connectionLocal, collectionsensort1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior")).start();
+				new ThreadSensor(connectionLocal, collectionsensort1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"T1","1").start();
 			} 
 			if(rs.getInt("idzona") == 2 && rs.getString("tipo").equals("H"))  {
-				new ThreadSensor(connectionLocal, collectionsensorh2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior")).start();
+				new ThreadSensor(connectionLocal, collectionsensorh2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"H2","2").start();
 			} 
 			if(rs.getInt("idzona") == 2 && rs.getString("tipo").equals("L"))  {
-				new ThreadSensor(connectionLocal, collectionsensorl2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior")).start();
+				new ThreadSensor(connectionLocal, collectionsensorl2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"L2","2").start();
 			} 
 			if(rs.getInt("idzona") == 2 && rs.getString("tipo").equals("T"))  {
-				new ThreadSensor(connectionLocal, collectionsensort2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior")).start();
+				new ThreadSensor(connectionLocal, collectionsensort2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"T2","2").start();
 			} 
 		}
     }

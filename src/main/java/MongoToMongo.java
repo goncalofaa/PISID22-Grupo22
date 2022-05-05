@@ -54,7 +54,6 @@ public class MongoToMongo {
 					listat1.add(doc);
 			}
 		}
-		//System.out.println("A gerar novos dados no Mongo Local: zona " + zona + " Sensor " + sensor);
 		if(!listat1.isEmpty())
 			localCollection.insertMany(listat1);
 	}

@@ -28,6 +28,8 @@ public class ThreadSensor extends Thread{
 	private int sensorZona;
 	private char sensorTipo;
 	private double margem_outlier;
+	private final int KEEPALIVE = 45;
+	private final int INTERVALOALERTA8 = 60;
 
 	List<Integer> outliers = new ArrayList<>();
 	String zona;
@@ -36,12 +38,14 @@ public class ThreadSensor extends Thread{
 	
 	double auxiliar;
 	
-	public ThreadSensor(MysqlProfConnection connectionLocal,  String sensorCollection, int limitesensorinferior, int limitesensorsuperior) {
+	public ThreadSensor(MysqlProfConnection connectionLocal,  String sensorCollection, int limitesensorinferior, int limitesensorsuperior, String sensor, String zona) {
 		this.connectionLocal = connectionLocal;
 	//	this.connectionNuvem = connectionNuvem;
 		this.sensorCollection = sensorCollection;
 		this.limitesensorinferior = limitesensorinferior;
 		this.limitesensorsuperior = limitesensorsuperior;
+		this.sensor = sensor;
+		this.zona = zona;
 		criarlista();
         String sensor_caracteristicas = sensorCollection.substring(sensorCollection.length() - 2);
         sensorTipo = sensor_caracteristicas.charAt(0);
@@ -65,6 +69,7 @@ public class ThreadSensor extends Thread{
     		try {
     			String message = mqttReceiver.getMessage();
     			System.out.println(message);
+    			
     			if(message != null && !message.isEmpty()){
 	    			String[] messageSplit = message.split(";");
 	    			zona = messageSplit[0].split(":")[1].replace("Z", "");
@@ -80,7 +85,6 @@ public class ThreadSensor extends Thread{
 	    			// Deve estar errado, but i tried
 	    			//se calhar não é preciso percurrer sempre isto pq as margens não vao estar sempre a ser alteradas e também a zona é sempre a mesma.
 	    			
-	    			//Connection toMySql = (Connection) msConnection;
 	    			st = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM parametrozona");
 	    			rs = st.executeQuery();
 	    			auxiliar = ultimo_avaliado;
@@ -148,9 +152,43 @@ public class ThreadSensor extends Thread{
 	    			String query = "INSERT INTO medicao (Zona, Sensor, Data, Valido, Leitura) VALUES ('" + zona + "','" + sensor + "','" + data + "','" + valido + "','" + leitura + "');";
 	    			System.out.println(query);
 	    			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
+    			}else {
+	    			//
+	    			PreparedStatement st3 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM alerta WHERE Sensor = ? and TipoAlerta = ? ORDER BY Data DESC LIMIT 1");
+	    			st3.setString(1, sensor);
+	    			st3.setString(2, "8");
+	    			ResultSet rs3 = st3.executeQuery();
+	    			Timestamp dataatualPT = new Timestamp(System.currentTimeMillis());
+	    			Timestamp dataatual = new Timestamp(System.currentTimeMillis() + (1000 * 60 * 60));
+	    			if(rs3.next()) {
+	    				Timestamp ultimoaviso = rs3.getTimestamp("Data");
+    					Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (INTERVALOALERTA8 * 1000)); // vezes 60
+    					if(dataatual.after(intervaloAviso)) {
+    						String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + dataatualPT + "', '" + "0" + "', '" + "8" + "' ,'" + "Nao tem" + "','" + "Alerta do tipo: " + "8" + "', '" + "1" + "','" + "100" + "','" + dataatualPT + "');";
+    						System.err.println(query);
+    						connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
+    					}
+	    			}else {	    			
+		    			st3 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM medicao WHERE Sensor = ? ORDER BY Data DESC LIMIT 1");
+		    			st3.setString(1, sensor);
+		    			rs3 = st3.executeQuery();
+		    		
+		    			if(rs3.next()) {
+		    				Timestamp ultimoaviso = rs3.getTimestamp("Data");
+	
+	    					Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (KEEPALIVE * 1000)); // vezes 60
+	    					if(dataatual.after(intervaloAviso)) {
+	    						String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + dataatualPT + "', '" + "0" + "', '" + "8" + "' ,'" + "Nao tem" + "','" + "Alerta do tipo: " + "8" + "', '" + "1" + "','" + "100" + "','" + dataatualPT + "');";
+	    						System.err.println(query);
+	    						connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
+	    					}	  
+		    			}
+	    			}
+	    			
+	    			//
     			}
     			
-				Thread.sleep(1000);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			} catch (SQLException e) {
@@ -350,7 +388,7 @@ public class ThreadSensor extends Thread{
 		st3.setString(1, sensor);
 		st3.setInt(2, cultura.getIdCultura());
 		ResultSet rs3 = st3.executeQuery();
-		Timestamp dataatualPT = new Timestamp(System.currentTimeMillis());;
+		Timestamp dataatualPT = new Timestamp(System.currentTimeMillis());
 		Timestamp dataatual = new Timestamp(System.currentTimeMillis() + (1000 * 60 * 60));;
 		if(rs3.next()) {
 			Timestamp ultimoaviso = rs3.getTimestamp("HoraEscrita");
