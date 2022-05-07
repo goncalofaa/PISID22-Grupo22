@@ -1,6 +1,8 @@
 import java.util.ArrayDeque;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -16,7 +18,7 @@ public class MqttReceiver implements MqttCallback {
 	public static String CLOUDSERVER = "tcp://broker.mqtt-dashboard.com:1883";
 	private String sensorTopic;
 	private IMqttClient mqttClient;
-	private ArrayDeque<String> messageList = new ArrayDeque();
+	private BlockingQueue<String> messageList = new LinkedBlockingDeque<>();
 	
 	
 
@@ -42,7 +44,7 @@ public class MqttReceiver implements MqttCallback {
 
 	@Override
 	public void connectionLost(Throwable arg0) {
-		System.out.println("Perdi a conexão");		
+
 	}
 
 	@Override
@@ -51,14 +53,14 @@ public class MqttReceiver implements MqttCallback {
 		
 	}
 	
-	public String getMessage() {
-		return messageList.pollFirst();
+	public String getMessage() throws InterruptedException {
+		return messageList.take();
 	}
 
 	@Override
 	public void messageArrived(String arg0, MqttMessage arg1) throws Exception {
 		//System.out.println(arg1.toString());
-		messageList.addLast(arg1.toString());
+		messageList.put(arg1.toString());
 	}
 
 }
