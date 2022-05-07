@@ -38,7 +38,7 @@ public class MongoToMQTT {
     private LocalDateTime datal2 = LocalDateTime.now();
     private LocalDateTime datah1 = LocalDateTime.now();
     private LocalDateTime datah2 = LocalDateTime.now();
-    private static final int TEMPOENVIO = 5100;
+    private static final int TEMPOENVIO = 5000;
     private static HashMap<String, LocalDateTime> datas = new HashMap<>(){{
         put("T1", null);
         put("T2", null);
@@ -98,11 +98,11 @@ public class MongoToMQTT {
 					Integer.parseInt(datSplit[3]), Integer.parseInt(datSplit[4]), Integer.parseInt(datSplit[5]));
 		}
 		if(datarec1 != null && dataRecenteMongo != null && dataRecenteMongo.isAfter(datarec1)) {
-			System.out.println(datarec1.toString());
-			System.out.println(dataRecenteMongo.toString());
-			enviaMensagemMqtt(recentDoc, collection);
+			enviaMensagemMqtt(recentDoc, collection,"");
 		}else if(datarec1 == null && dataRecenteMongo != null) {
-			enviaMensagemMqtt(recentDoc, collection);
+			enviaMensagemMqtt(recentDoc, collection,"");
+		}else if(datarec1 != null && dataRecenteMongo != null && !dataRecenteMongo.isAfter(datarec1)){
+			enviaMensagemMqtt(recentDoc, collection,"sensorDown");
 		}
 		datas.put(sensor, dataRecenteMongo);	
     }
@@ -131,12 +131,13 @@ public class MongoToMQTT {
 		return datah2;
 	}
 
-	public void enviaMensagemMqtt(Document recentDoc, String collection) {
-		String rawMsg = "Zona:" + recentDoc.getString("Zona") + ";" + "Sensor:" +
+	public void enviaMensagemMqtt(Document recentDoc, String collection, String rawMsg) {
+		if(rawMsg.isEmpty()) {
+			rawMsg = "Zona:" + recentDoc.getString("Zona") + ";" + "Sensor:" +
 				recentDoc.getString("Sensor") + ";" + "Data:" + recentDoc.getString("Data") + ";" +
 					"Medicao:" + recentDoc.getString("Medicao");
+		}
 		byte[] payload = rawMsg.getBytes();
-		System.out.println(rawMsg);
 		
 	    MqttMessage msg = new MqttMessage(payload);
 	    msg.setQos(0);
@@ -149,29 +150,7 @@ public class MongoToMQTT {
 			e.printStackTrace();
 		}
 	}
-//	public void obterDataMaisRecenteSensores() {
-//		LocalDateTime dataRecenteMongo = null;
-//		String dataRecMongo = recentDoc.getString("Data");
-//		if(dataRecMongo != null && !dataRecMongo.isEmpty()) {
-//			dataRecMongo=dataRecMongo.replace("T", " ");
-//			dataRecMongo=dataRecMongo.replace("Z", "");
-//			dataRecMongo=dataRecMongo.replace("-", " ");
-//			dataRecMongo=dataRecMongo.replace(":", " ");
-//			String[] datSplit = dataRecMongo.split(" ");
-//			dataRecenteMongo = LocalDateTime.of(Integer.parseInt(datSplit[0]), Integer.parseInt(datSplit[1]), Integer.parseInt(datSplit[2]), 
-//					Integer.parseInt(datSplit[3]), Integer.parseInt(datSplit[4]), Integer.parseInt(datSplit[5]));
-//		}
-//
-//		if(dataRecenteMedicoesMysql != null && dataRecenteMongo != null && dataRecenteMedicoesMysql.isAfter(dataRecenteMongo)) {
-//			//nao envia para mqtt
-//		}else if(dataRecenteMedicoesMysql != null && dataRecenteMongo != null && dataRecenteMedicoesMysql.isBefore(dataRecenteMongo)) {
-//			//envia para mqtt
-//			enviaMensagemMqtt(recentDoc, collection);
-//		}else if(dataRecenteMedicoesMysql == null && dataRecenteMongo != null) {
-//			//envia para mqtt
-//			enviaMensagemMqtt(recentDoc, collection);
-//		}
-//	}
+
     
 	public static void main(String[] args) throws MqttException, InterruptedException {
 		
@@ -182,13 +161,14 @@ public class MongoToMQTT {
 	    
 		MongoToMQTT mongoMqtt = new MongoToMQTT();
 		while (true) {
+
 			mongoMqtt.publishDocument(collectiont1,"T1",mongoMqtt.getDatat1(),localMongoDatabase);
 			mongoMqtt.publishDocument(collectiont2,"T2",mongoMqtt.getDatat2(), localMongoDatabase);
 			mongoMqtt.publishDocument(collectionh1,"H1",mongoMqtt.getDatah1(), localMongoDatabase);
 			mongoMqtt.publishDocument(collectionh2,"H2",mongoMqtt.getDatah2(), localMongoDatabase);
 			mongoMqtt.publishDocument(collectionl1,"L1",mongoMqtt.getDatal1(), localMongoDatabase);
 			mongoMqtt.publishDocument(collectionl2,"L2",mongoMqtt.getDatal2(), localMongoDatabase);
-			System.out.println(datas.get("T1"));
+
 			Thread.sleep(TEMPOENVIO);
 		}
 	}
