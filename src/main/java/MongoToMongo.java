@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class MongoToMongo {
 	
     private static String urlcloud = "mongodb://root:teste124@194.210.86.10:27017/?authSource=admin";
-    private static String urllocal = "mongodb://localhost:27019,localhost:25019,localhost:23019/?replicaSet=replicaimdb";
+    private static String urllocal = "mongodb://localhost:27019,localhost:25019,localhost:23019/?replicaSet=replicaImdb";
     private static String database="sid2022";
     private static String collectionsensort1 = "sensort1";
     private static String collectionsensort2 = "sensort2";

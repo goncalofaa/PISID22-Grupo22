@@ -121,7 +121,7 @@ public class ThreadSensor extends Thread{
 	    			double dado = arredondamento(Double.parseDouble(leitura)); 
 	    			leitura = Double.toString(dado);
 	    			
-	    			verificar_outlier(leitura);
+	    			verificar_outlier(leitura, sensor);
 //	    			
 //	    			System.out.println("LEITURA COM ARREDONDAMENTO: " + leitura);
 	    			//Connection toMySql2 = (Connection) msConnection; //deve dar com a conec��o em cima
@@ -203,14 +203,14 @@ public class ThreadSensor extends Thread{
 	
 	
 	
-	public void verificar_outlier(String leitura) throws SQLException {
+	public void verificar_outlier(String leitura, String sensor) throws SQLException {
 //		System.out.println(sensorTipo);
 //		System.err.println("Foi verificar alertas outliers");
 		double dado = Double.parseDouble(leitura); 
 		dado = arredondamento(dado);
 		if(margem_outlier != 0) { // isto �, ainda n�o existe um valor atribu�do por isso est� no default
 			//System.err.println("Entrei no margem outlier");
-			verificar_outliers(dado);
+			verificar_outliers(dado, sensor);
 		}
 		verificar_lista_outliers(dado);
 	}
@@ -247,12 +247,9 @@ public class ThreadSensor extends Thread{
 		return decimal.doubleValue();
 	}
 	
-	public int verificacao_validade(double medicao) {
+	public int verificacao_validade(double medicao, String sensor) {
 		//verifica��o se os dados est�o corretos, provavelmente em trigger
-		
-		
-		
-		if(limitesensorsuperior < medicao || limitesensorinferior > medicao) {
+		if(limitesensorsuperior < medicao || limitesensorinferior > medicao || (sensor.contains("H") && medicao<0) || (sensor.contains("L") && medicao<0)) {
 			return 1; // inv�lido
 		}else {
 			return 0; // v�lido
@@ -267,8 +264,8 @@ public class ThreadSensor extends Thread{
 	
 	int count_Outlier = 0;
 	
-	public void verificar_outliers(double medicao) {  // adicionar aqui o tipo de sensor ??
-		if(verificacao_validade(medicao) == 0) {
+	public void verificar_outliers(double medicao, String sensor) {  // adicionar aqui o tipo de sensor ??
+		if(verificacao_validade(medicao, sensor) == 0) {
 			if(ultimo_valido == -276) {
 				ultimo_valido = medicao;
 			}
@@ -327,7 +324,7 @@ public class ThreadSensor extends Thread{
 		//limpar a lista e criar uma nova
 		outliers.clear();
 		criarlista();
-		String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "7" + "' ,'" + null + "','" + "Alerta Outlier, medi��o errada do sensor"+ "', '" + 1000 + "','" + 0 + "','" + data + "');";
+		String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "7" + "' ,'" + "Cultura Geral" + "','" + "Alerta Outlier, medi��o errada do sensor"+ "', '" + 98 + "','" + 0 + "','" + data + "');";
 		//System.err.println(query);
 		connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 		
