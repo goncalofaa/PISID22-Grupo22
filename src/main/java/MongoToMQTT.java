@@ -38,7 +38,7 @@ public class MongoToMQTT {
     private LocalDateTime datal2 = LocalDateTime.now();
     private LocalDateTime datah1 = LocalDateTime.now();
     private LocalDateTime datah2 = LocalDateTime.now();
-    private static final int TEMPOENVIO = 5100;
+    private static final int TEMPOENVIO = 5000;
     private static HashMap<String, LocalDateTime> datas = new HashMap<>(){{
         put("T1", null);
         put("T2", null);
