@@ -389,7 +389,7 @@ public class ThreadSensor extends Thread{
 			if(ultimoTipoAviso == 3) {
 				//System.out.println("dataAtual = " + dataatual+ " "+cultura.getIdCultura());
 				//System.out.println("ultimo aviso = " + ultimoaviso+ " "+cultura.getIdCultura());
-				Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (cultura.getIntervaloAviso() * 1000)); // vezes 60
+				Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (cultura.getIntervaloAviso() * 1000 * 60  )); // vezes 60
 				//System.out.println("intervalo aviso = " + intervaloAviso + " "+cultura.getIdCultura());
 				if(dataatual.after(intervaloAviso)) {
 					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "3" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta vermelho do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
@@ -423,7 +423,7 @@ public class ThreadSensor extends Thread{
 			if(ultimoTipoAviso == 2) {
 				//System.out.println("dataAtual = " + dataatual+ " "+cultura.getIdCultura());
 				//System.out.println("ultimo aviso = " + ultimoaviso+ " "+cultura.getIdCultura());
-				Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (cultura.getIntervaloAviso() * 1000)); // vezes 60
+				Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (cultura.getIntervaloAviso() * 1000 * 60)); // vezes 60
 				//System.out.println("intervalo aviso = " + intervaloAviso + " "+cultura.getIdCultura());
 				if(dataatual.after(intervaloAviso)) {
 					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "2" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta laranja do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT  + "');";
@@ -457,7 +457,7 @@ public class ThreadSensor extends Thread{
 			if(ultimoTipoAviso == 1) {
 				//System.out.println("dataAtual = " + dataatual+ " "+cultura.getIdCultura());
 				//System.out.println("ultimo aviso = " + ultimoaviso+ " "+cultura.getIdCultura());
-				Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (cultura.getIntervaloAviso() * 1000 )); // vezes 60
+				Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (cultura.getIntervaloAviso() * 1000 * 60 )); // vezes 60
 				//System.out.println("intervalo aviso = " + intervaloAviso + " "+cultura.getIdCultura());
 				if(dataatual.after(intervaloAviso)) {
 					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
