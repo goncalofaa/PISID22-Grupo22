@@ -191,39 +191,7 @@ public class ThreadSensor extends Thread{
 						connectionLocal.getConnectionSQL().createStatement().executeUpdate(query1);
 	    			}				
     			}
-//	    			//alerta8
-//	    			PreparedStatement st3 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM alerta WHERE Sensor = ? and TipoAlerta = ? ORDER BY Data DESC LIMIT 1");
-//	    			st3.setString(1, sensor);
-//	    			st3.setString(2, "8");
-//	    			ResultSet rs3 = st3.executeQuery();
-//	    			Timestamp dataatualPT = new Timestamp(System.currentTimeMillis());
-//	    			Timestamp dataatual = new Timestamp(System.currentTimeMillis() + (1000 * 60 * 60));
-//	    			if(rs3.next()) {
-//	    				Timestamp ultimoaviso = rs3.getTimestamp("Data");
-//    					Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (INTERVALOALERTA8 * 1000)); // vezes 60
-//    					if(dataatual.after(intervaloAviso)) {
-//    						String query1 = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + dataatualPT + "', '" + "0" + "', '" + "8" + "' ,'" + "Nao tem" + "','" + "Alerta do tipo: " + "8" + "', '" + "1" + "','" + "100" + "','" + dataatualPT + "');";
-//    						System.err.println(query1);
-//    						connectionLocal.getConnectionSQL().createStatement().executeUpdate(query1);
-//    					}
-//	    			}else {	    			
-//		    			st3 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM medicao WHERE Sensor = ? ORDER BY Data DESC LIMIT 1");
-//		    			st3.setString(1, sensor);
-//		    			rs3 = st3.executeQuery();
-//		    		
-//		    			if(rs3.next()) {
-//		    				Timestamp ultimoaviso = rs3.getTimestamp("Data");
-//	
-//	    					Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (KEEPALIVE * 1000)); // vezes 60
-//	    					if(dataatual.after(intervaloAviso)) {
-//	    						String query2 = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + dataatualPT + "', '" + "0" + "', '" + "8" + "' ,'" + "Nao tem" + "','" + "Alerta do tipo: " + "8" + "', '" + "1" + "','" + "100" + "','" + dataatualPT + "');";
-//	    						System.err.println(query2);
-//	    						connectionLocal.getConnectionSQL().createStatement().executeUpdate(query2);
-//	    					}	  
-//		    			}
-//	    			}
-//	    			
-//	    			//
+
 
 			} catch (SQLException | InterruptedException | BrokenBarrierException e) {
 				// TODO Auto-generated catch block
