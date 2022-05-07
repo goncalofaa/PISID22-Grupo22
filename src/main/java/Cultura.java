@@ -16,6 +16,7 @@ public class Cultura {
 	private double avisoTempMax;
 	private double avisoTempMin;
 	private int intervaloAviso;
+	private String nomecultura;
 	
 	public Cultura() {
 		super();
@@ -25,7 +26,7 @@ public class Cultura {
 
 	public Cultura(int idCultura, int idUtilizador, double limiteLuzMax, double limiteLuzMin, double limiteHumMax,
 			double limiteHumMin, double limiteTempMax, double limiteTempMin, double avisoLuzMax, double avisoLuzMin,
-			double avisoHumMax, double avisoHumMin, double avisoTempMax, double avisoTempMin, int intervaloAviso) {
+			double avisoHumMax, double avisoHumMin, double avisoTempMax, double avisoTempMin, int intervaloAviso, String nomecultura) {
 		super();
 		this.idCultura = idCultura;
 		this.idUtilizador = idUtilizador;
@@ -42,6 +43,7 @@ public class Cultura {
 		this.avisoTempMax = avisoTempMax;
 		this.avisoTempMin = avisoTempMin;
 		this.intervaloAviso = intervaloAviso;
+		this.nomecultura = nomecultura;
 	}
 
 	public double getLimiteLuzMax() {
@@ -162,6 +164,14 @@ public class Cultura {
 
 	public void setIdUtilizador(int idUtilizador) {
 		this.idUtilizador = idUtilizador;
+	}
+
+	public String getNomeCultura() {
+		return nomecultura;
+	}
+
+	public void setNomeCultura(String NomeCultura) {
+		this.nomecultura = NomeCultura;
 	}
 	
 }

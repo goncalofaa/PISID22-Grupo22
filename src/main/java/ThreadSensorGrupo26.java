@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
 public class ThreadSensorGrupo26 extends Thread{
 	//private MysqlConnection msConnection;
@@ -30,7 +31,7 @@ public class ThreadSensorGrupo26 extends Thread{
 	private double margem_outlier;
 	private final int KEEPALIVE = 45;
 	private final int INTERVALOALERTA8 = 60;
-
+	private BlockingQueue<String> messageList;
 	List<Integer> outliers = new ArrayList<>();
 	String zona;
 	String sensor;
@@ -38,7 +39,7 @@ public class ThreadSensorGrupo26 extends Thread{
 	
 	double auxiliar;
 	
-	public ThreadSensorGrupo26(MysqlProfConnection connectionLocal,  String sensorCollection, int limitesensorinferior, int limitesensorsuperior, String sensor, String zona) {
+	public ThreadSensorGrupo26(MysqlProfConnection connectionLocal,  String sensorCollection, int limitesensorinferior, int limitesensorsuperior, String sensor, String zona, BlockingQueue<String> messageList) {
 		this.connectionLocal = connectionLocal;
 	//	this.connectionNuvem = connectionNuvem;
 		this.sensorCollection = sensorCollection;
@@ -46,6 +47,7 @@ public class ThreadSensorGrupo26 extends Thread{
 		this.limitesensorsuperior = limitesensorsuperior;
 		this.sensor = sensor;
 		this.zona = zona;
+		this.messageList = messageList;
 		criarlista();
         String sensor_caracteristicas = sensorCollection.substring(sensorCollection.length() - 2);
         sensorTipo = sensor_caracteristicas.charAt(0);
@@ -57,11 +59,8 @@ public class ThreadSensorGrupo26 extends Thread{
         //noinspection InfiniteLoopStatement
         while (true) {
     		try {
+				message=messageList.take();
     			System.out.println(message);
-				while (message == messagercv || messagercv == null){
-
-				}
-				messagercv=message;
     			if(message != null && !message.isEmpty()){
 	    			String[] messageSplit = message.split(";");
 	    			zona = messageSplit[0].split(":")[1].replace("Z", "");
@@ -108,6 +107,7 @@ public class ThreadSensorGrupo26 extends Thread{
 	    				int estado = rs.getInt("Estado");
 	    				int idZonaCultura = rs.getInt("Zona");
 	    				int idCultura = rs.getInt("IDCultura");
+						String nomecultura = rs.getString("NomeCultura");
 	    			//	System.out.println("O meu IDZONA: " + idZonaCultura);
 	    			//	String idCultura1 = String.valueOf(rs.getInt("IDCultura"));
 	    			//	System.out.println( "idcultura autal : " + idCultura);
@@ -115,28 +115,30 @@ public class ThreadSensorGrupo26 extends Thread{
 		    				if(idZonaCultura == sensorZona) {
 		    					Cultura cultura = new Cultura();
 		    					cultura.setIdCultura(idCultura);
+								cultura.setNomeCultura(nomecultura);
 		    					cultura.setIdUtilizador(rs.getInt("IDUtilizador"));
 		    					st1 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM parametrocultura WHERE IDParametroCultura = ?"); // não sei se a comparação funciona com string
 		    					st1.setInt(1, idCultura);
 		    	    			rs1 = st1.executeQuery();
-		    	    			rs1.next();
-			    				cultura.setAvisoHumMax(rs1.getDouble("AvisoHumidadeMax"));
-			    				cultura.setAvisoHumMin(rs1.getDouble("AvisoHumidadeMin"));
-			    				cultura.setAvisoLuzMax(rs1.getDouble("AvisoLuminosidadeMax"));
-			    				cultura.setAvisoLuzMin(rs1.getDouble("AvisoLuminosidadeMin"));
-			    				cultura.setAvisoTempMax(rs1.getDouble("AvisoTemperaturaMax"));
-			    				cultura.setAvisoTempMin(rs1.getDouble("AvisoTemperaturaMin"));
-			    				cultura.setLimiteHumMax(rs1.getDouble("LimiteHumidadeMax"));
-			    				cultura.setLimiteHumMin(rs1.getDouble("LimiteHumidadeMin"));
-			    				cultura.setLimiteLuzMax(rs1.getDouble("LimiteLuminosidadeMax"));
-			    				cultura.setLimiteLuzMin(rs1.getDouble("LimiteLuminosidadeMin"));
-			    				cultura.setLimiteTempMax(rs1.getDouble("LimiteTemperaturaMax"));
-			    				cultura.setLimiteTempMin(rs1.getDouble("LimiteTemperaturaMin"));
-			    				cultura.setIntervaloAviso(rs1.getInt("IntervaloAviso"));
-	//		    				System.out.println("avisoHMax = " + cultura.getAvisoHumMax());
-	//		    				System.out.println("limiteTMax = " + cultura.getLimiteTempMax());
-	//		    				System.out.println("avisoLMax = " + cultura.getAvisoLuzMax());
-			    				verificar_alertas(leitura,cultura);
+		    	    			if(rs1.next()) {
+									cultura.setAvisoHumMax(rs1.getDouble("AvisoHumidadeMax"));
+									cultura.setAvisoHumMin(rs1.getDouble("AvisoHumidadeMin"));
+									cultura.setAvisoLuzMax(rs1.getDouble("AvisoLuminosidadeMax"));
+									cultura.setAvisoLuzMin(rs1.getDouble("AvisoLuminosidadeMin"));
+									cultura.setAvisoTempMax(rs1.getDouble("AvisoTemperaturaMax"));
+									cultura.setAvisoTempMin(rs1.getDouble("AvisoTemperaturaMin"));
+									cultura.setLimiteHumMax(rs1.getDouble("LimiteHumidadeMax"));
+									cultura.setLimiteHumMin(rs1.getDouble("LimiteHumidadeMin"));
+									cultura.setLimiteLuzMax(rs1.getDouble("LimiteLuminosidadeMax"));
+									cultura.setLimiteLuzMin(rs1.getDouble("LimiteLuminosidadeMin"));
+									cultura.setLimiteTempMax(rs1.getDouble("LimiteTemperaturaMax"));
+									cultura.setLimiteTempMin(rs1.getDouble("LimiteTemperaturaMin"));
+									cultura.setIntervaloAviso(rs1.getInt("IntervaloAviso"));
+									//		    				System.out.println("avisoHMax = " + cultura.getAvisoHumMax());
+									//		    				System.out.println("limiteTMax = " + cultura.getLimiteTempMax());
+									//		    				System.out.println("avisoLMax = " + cultura.getAvisoLuzMax());
+									verificar_alertas(leitura, cultura);
+								}
 		    				}
 	    				}
 	    			}
@@ -383,7 +385,7 @@ public class ThreadSensorGrupo26 extends Thread{
 		
 		Timestamp dataatualPT = new Timestamp(System.currentTimeMillis());;
 		
-		String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "3" + "' ,'" + cultura + "','" + "Alerta vermelho do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
+		String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "3" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta vermelho do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
 		System.err.println(query);
 		connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 	}
@@ -406,19 +408,19 @@ public class ThreadSensorGrupo26 extends Thread{
 				Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (cultura.getIntervaloAviso() * 1000 *60)); // vezes 60
 				System.out.println("intervalo aviso = " + intervaloAviso + " "+cultura.getIdCultura());
 				if(dataatual.after(intervaloAviso)) {
-					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
+					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
 					System.err.println(query);
 					connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 				}
 			}
 			else {
-				String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
+				String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
 				System.err.println(query);
 				connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 			}
 		}
 		else {
-			String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
+			String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
 			System.err.println(query);
 			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 		}

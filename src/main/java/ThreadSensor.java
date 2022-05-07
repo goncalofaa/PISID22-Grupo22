@@ -98,7 +98,7 @@ public class ThreadSensor extends Thread{
 	    			String leitura = messageSplit[3].split(":")[1].replace(",", ".");
 //	    	        System.out.println("LEITURA: " + leitura);
 	    			// Deve estar errado, but i tried
-	    			//se calhar não é preciso percurrer sempre isto pq as margens não vao estar sempre a ser alteradas e também a zona é sempre a mesma.
+	    			//se calhar nï¿½o ï¿½ preciso percurrer sempre isto pq as margens nï¿½o vao estar sempre a ser alteradas e tambï¿½m a zona ï¿½ sempre a mesma.
 	    			
 	    			st = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM parametrozona");
 	    			rs = st.executeQuery();
@@ -124,22 +124,23 @@ public class ThreadSensor extends Thread{
 	    			verificar_outlier(leitura);
 //	    			
 //	    			System.out.println("LEITURA COM ARREDONDAMENTO: " + leitura);
-	    			//Connection toMySql2 = (Connection) msConnection; //deve dar com a conecção em cima
+	    			//Connection toMySql2 = (Connection) msConnection; //deve dar com a conecï¿½ï¿½o em cima
 	    			st = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM cultura");
 	    			//st.setInt(1, sensorZona);
 	    			rs = st.executeQuery();
 	    			while(rs.next()) {
-	    				//estado inativo não é preciso verificação de alerta
+	    				//estado inativo nï¿½o ï¿½ preciso verificaï¿½ï¿½o de alerta
 	    				int estado = rs.getInt("Estado");
 	    				int idZonaCultura = rs.getInt("Zona");
 	    				int idCultura = rs.getInt("IDCultura");
-
-	    				if(estado == 1) {
+						String nomecultura = rs.getString("NomeCultura");
+						if(estado == 1) {
 		    				if(idZonaCultura == sensorZona) {
 		    					Cultura cultura = new Cultura();
 		    					cultura.setIdCultura(idCultura);
-		    					cultura.setIdUtilizador(rs.getInt("IDUtilizador"));
-		    					st1 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM parametrocultura WHERE IDParametroCultura = ?"); // não sei se a comparação funciona com string
+								cultura.setNomeCultura(nomecultura);
+								cultura.setIdUtilizador(rs.getInt("IDUtilizador"));
+		    					st1 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM parametrocultura WHERE IDParametroCultura = ?"); // nï¿½o sei se a comparaï¿½ï¿½o funciona com string
 		    					st1.setInt(1, idCultura);
 		    	    			rs1 = st1.executeQuery();
 		    	    			if(rs1.next()) {
@@ -207,7 +208,7 @@ public class ThreadSensor extends Thread{
 //		System.err.println("Foi verificar alertas outliers");
 		double dado = Double.parseDouble(leitura); 
 		dado = arredondamento(dado);
-		if(margem_outlier != 0) { // isto é, ainda não existe um valor atribuído por isso está no default
+		if(margem_outlier != 0) { // isto ï¿½, ainda nï¿½o existe um valor atribuï¿½do por isso estï¿½ no default
 			//System.err.println("Entrei no margem outlier");
 			verificar_outliers(dado);
 		}
@@ -221,7 +222,7 @@ public class ThreadSensor extends Thread{
 //		System.out.println("Foi verificar alertas");
 		double dado = Double.parseDouble(leitura); 
 		dado = arredondamento(dado);
-//		if(margem_outlier != 0) { // isto é, ainda não existe um valor atribuído por isso está no default
+//		if(margem_outlier != 0) { // isto ï¿½, ainda nï¿½o existe um valor atribuï¿½do por isso estï¿½ no default
 //			System.err.println("Entrei no margem outlier");
 //			verificar_outliers(dado, cultura);
 //		}
@@ -247,14 +248,14 @@ public class ThreadSensor extends Thread{
 	}
 	
 	public int verificacao_validade(double medicao) {
-		//verificação se os dados estão corretos, provavelmente em trigger
+		//verificaï¿½ï¿½o se os dados estï¿½o corretos, provavelmente em trigger
 		
 		
 		
 		if(limitesensorsuperior < medicao || limitesensorinferior > medicao) {
-			return 1; // inválido
+			return 1; // invï¿½lido
 		}else {
-			return 0; // válido
+			return 0; // vï¿½lido
 		}
 	}
 	
@@ -272,7 +273,7 @@ public class ThreadSensor extends Thread{
 				ultimo_valido = medicao;
 			}
 			double diferenca = Math.abs(ultimo_valido - medicao);
-			//System.out.println("Diferença - " + diferenca );
+			//System.out.println("Diferenï¿½a - " + diferenca );
 			if(count_Outlier >= 2) {
 				double diferenca2 = Math.abs(ultimo_avaliado - medicao);
 				if(diferenca2 < margem_outlier) {
@@ -297,7 +298,7 @@ public class ThreadSensor extends Thread{
 			valido = 1;
 		}
 		ultimo_avaliado = medicao;
-		//não há concorrencia por isso acho que pode ficar assim
+		//nï¿½o hï¿½ concorrencia por isso acho que pode ficar assim
 		//System.err.println("valido = " + valido);
 		outliers.add(valido);
 		outliers.remove(0);
@@ -326,7 +327,7 @@ public class ThreadSensor extends Thread{
 		//limpar a lista e criar uma nova
 		outliers.clear();
 		criarlista();
-		String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "7" + "' ,'" + null + "','" + "Alerta Outlier, medição errada do sensor"+ "', '" + 1000 + "','" + 0 + "','" + data + "');";
+		String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "7" + "' ,'" + null + "','" + "Alerta Outlier, mediï¿½ï¿½o errada do sensor"+ "', '" + 1000 + "','" + 0 + "','" + data + "');";
 		//System.err.println(query);
 		connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 		
@@ -394,19 +395,19 @@ public class ThreadSensor extends Thread{
 				Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (cultura.getIntervaloAviso() * 1000)); // vezes 60
 				//System.out.println("intervalo aviso = " + intervaloAviso + " "+cultura.getIdCultura());
 				if(dataatual.after(intervaloAviso)) {
-					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "3" + "' ,'" + cultura + "','" + "Alerta vermelho do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
+					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "3" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta vermelho do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
 					//System.err.println(query);
 					connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 				}
 			}
 			else {
-				String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "3" + "' ,'" + cultura + "','" + "Alerta vermelho do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
+				String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "3" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta vermelho do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
 				//System.err.println(query);
 				connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 			}
 		}
 		else {
-			String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "3" + "' ,'" + cultura + "','" + "Alerta vermelho do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
+			String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "3" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta vermelho do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
 			//System.err.println(query);
 			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 		}
@@ -428,19 +429,19 @@ public class ThreadSensor extends Thread{
 				Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (cultura.getIntervaloAviso() * 1000)); // vezes 60
 				//System.out.println("intervalo aviso = " + intervaloAviso + " "+cultura.getIdCultura());
 				if(dataatual.after(intervaloAviso)) {
-					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "2" + "' ,'" + cultura + "','" + "Alerta laranja do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT  + "');";
+					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "2" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta laranja do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT  + "');";
 					//System.err.println(query);
 					connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 				}
 			}
 			else {
-				String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "2" + "' ,'" + cultura + "','" + "Alerta laranja do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT  + "');";
+				String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "2" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta laranja do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT  + "');";
 				//System.err.println(query);
 				connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 			}
 		}
 		else {
-			String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "2" + "' ,'" + cultura + "','" + "Alerta laranja do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT  + "');";
+			String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "2" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta laranja do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT  + "');";
 			//System.err.println(query);
 			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 		}
@@ -462,19 +463,19 @@ public class ThreadSensor extends Thread{
 				Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (cultura.getIntervaloAviso() * 1000 )); // vezes 60
 				//System.out.println("intervalo aviso = " + intervaloAviso + " "+cultura.getIdCultura());
 				if(dataatual.after(intervaloAviso)) {
-					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
+					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
 					//System.err.println(query);
 					connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 				}
 			}
 			else {
-				String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
+				String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
 				//System.err.println(query);
 				connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 			}
 		}
 		else {
-			String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
+			String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
 			//System.err.println(query);
 			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 		}

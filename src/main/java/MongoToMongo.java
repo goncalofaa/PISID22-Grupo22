@@ -76,7 +76,7 @@ public class MongoToMongo {
         	mongoToMongo.insertCollection(localMongoDatabase, collectionsensort2, cloudMongoDatabase, collectionsensorCloud, "Z2","T2");
         	mongoToMongo.insertCollection(localMongoDatabase, collectionsensorh2, cloudMongoDatabase, collectionsensorCloud, "Z2","H2");
         	mongoToMongo.insertCollection(localMongoDatabase, collectionsensorl2, cloudMongoDatabase, collectionsensorCloud, "Z2","L2");
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(5);
         }
     }
 }

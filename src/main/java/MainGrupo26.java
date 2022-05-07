@@ -14,19 +14,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 public class MainGrupo26 {
-    
-    private static int periodo = 1;
+
     private static String urlcloud = "mongodb://root:teste124@194.210.86.10:27017/?authSource=admin";
-    private static String urllocal = "mongodb://localhost:27019,localhost:25019,localhost:23019/?replicaSet=medicoespisid";
+    private static String urllocal = "mongodb://localhost:27019,localhost:25019,localhost:23019/?replicaSet=replicaimdb";
     private static String database="sid2022";
     private static String collectionsensort1 = "sensort1";
     private static String collectionsensort2 = "sensort2";
@@ -34,20 +30,32 @@ public class MainGrupo26 {
     private static String collectionsensorh2 = "sensorh2";
     private static String collectionsensorl1 = "sensorl1";
     private static String collectionsensorl2 = "sensorl2";
-    private static String collectionsmedicoes = "medicoes2022";
-    private static int MAXDOCUMENTS = 12;
-    private static ThreadSensorGrupo26 h1;
-    private static ThreadSensorGrupo26 h2;
-    private static ThreadSensorGrupo26 l1;
-    private static ThreadSensorGrupo26 l2;
-    private static ThreadSensorGrupo26 t1;
-    private static ThreadSensorGrupo26 t2;
-    private static String message;
+    private static String collectiont1 = "sensort1";
+    private static String collectiont2 = "sensort2";
+    private static String collectionh1 = "sensorh1";
+    private static String collectionh2 = "sensorh2";
+    private static String collectionl1 = "sensorl1";
+    private static String collectionl2 = "sensorl2";
+    private LocalDateTime datat1 = LocalDateTime.now();
+    private LocalDateTime datat2 = LocalDateTime.now();
+    private LocalDateTime datal1 = LocalDateTime.now();
+    private LocalDateTime datal2 = LocalDateTime.now();
+    private LocalDateTime datah1 = LocalDateTime.now();
+    private LocalDateTime datah2 = LocalDateTime.now();
+    private static BlockingQueue<String> messageListt1 = new LinkedBlockingDeque<>();
+    private static BlockingQueue<String> messageListt2 = new LinkedBlockingDeque<>();
+    private static BlockingQueue<String> messageListl1 = new LinkedBlockingDeque<>();
+    private static BlockingQueue<String> messageListl2 = new LinkedBlockingDeque<>();
+    private static BlockingQueue<String> messageListh1 = new LinkedBlockingDeque<>();
+    private static BlockingQueue<String> messageListh2 = new LinkedBlockingDeque<>();
+    private static String messaget1;
+    private static String messaget2;
+    private static String messagel1;
+    private static String messagel2;
+    private static String messageh1;
+    private static String messageh2;
 
-    private static String db = "monitorizacao";
-    private static String DBuser = "root";
-    private static String DBpass = "";
-    private static Connection connectionSQL;
+
     private static HashMap<String, LocalDateTime> datas = new HashMap<>(){{
         put("T1", null);
         put("T2", null);
@@ -56,25 +64,83 @@ public class MainGrupo26 {
         put("H1", null);
         put("H2", null);
     }};
-    private static HashMap<String, Object > sensoresfuncoes = new HashMap<>(){{
+
+    private static HashMap<String, BlockingQueue<String>> messsalists = new HashMap<>(){{
+        put("T1", new LinkedBlockingDeque<>());
+        put("T2", new LinkedBlockingDeque<>());
+        put("L1", new LinkedBlockingDeque<>());
+        put("L2", new LinkedBlockingDeque<>());
+        put("H1", new LinkedBlockingDeque<>());
+        put("H2", new LinkedBlockingDeque<>());
     }};
 
-    public static void insertCollection(MongoDatabase localMongoDatabase, String collection, MongoDatabase cloudMongoDatabase, String collectionCloud, String zona, String sensor) {
+    private static final int TEMPOENVIO = 5100;
+    private static String collectionsensorCloud = "medicoes2022";
+    private static int MAXDOCUMENTS = 12;
+
+    public static void main(String[] args) throws InterruptedException, SQLException {
+        //inicar Threads
+        MysqlProfConnection connectionLocal = new MysqlProfConnection("monitorizacao", "root", "", "localhost");
+        MysqlProfConnection connectionNuvem = new MysqlProfConnection("sid2022", "aluno", "aluno", "194.210.86.10");
+        PreparedStatement st = connectionNuvem.getConnectionSQL().prepareStatement("SELECT * FROM sensor");
+        ResultSet rs = st.executeQuery();
+        while(rs.next()) {
+            if(rs.getInt("idzona") == 1 && rs.getString("tipo").equals("H"))  {
+                new ThreadSensorGrupo26(connectionLocal, collectionsensorh1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"H1","1",messsalists.get("H1")).start();
+            }
+            if(rs.getInt("idzona") == 1 && rs.getString("tipo").equals("L"))  {
+                new ThreadSensorGrupo26(connectionLocal, collectionsensorl1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"L1","1",messsalists.get("L1")).start();
+            }
+            if(rs.getInt("idzona") == 1 && rs.getString("tipo").equals("T"))  {
+                new ThreadSensorGrupo26(connectionLocal, collectionsensort1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"T1","1",messsalists.get("T1")).start();
+            }
+            if(rs.getInt("idzona") == 2 && rs.getString("tipo").equals("H"))  {
+                new ThreadSensorGrupo26(connectionLocal, collectionsensorh2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"H2","2",messsalists.get("H2")).start();
+            }
+            if(rs.getInt("idzona") == 2 && rs.getString("tipo").equals("L"))  {
+                new ThreadSensorGrupo26(connectionLocal, collectionsensorl2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"L2","2",messsalists.get("L2")).start();
+            }
+            if(rs.getInt("idzona") == 2 && rs.getString("tipo").equals("T"))  {
+                new ThreadSensorGrupo26(connectionLocal, collectionsensort2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"T2","2",messsalists.get("T2")).start();
+            }
+        }
+        while(true) {
+            mongotoMongo();
+            mongotoMysql();
+        }
+    }
+
+    public static void mongotoMongo(){
+        System.out.println("Mongo To Mongo");
+        MongoClient localMongoClient = new MongoClient(new MongoClientURI(urllocal));
+        MongoDatabase localMongoDatabase = localMongoClient.getDatabase(database);
+        MongoClient cloudMongoClient = new MongoClient(new MongoClientURI(urlcloud));
+        MongoDatabase cloudMongoDatabase = cloudMongoClient.getDatabase(database);
+        insertCollection(localMongoDatabase, collectionsensort1, cloudMongoDatabase, collectionsensorCloud, "Z1","T1");
+        insertCollection(localMongoDatabase, collectionsensorh1, cloudMongoDatabase, collectionsensorCloud, "Z1","H1");
+        insertCollection(localMongoDatabase, collectionsensorl1, cloudMongoDatabase, collectionsensorCloud, "Z1","L1");
+        insertCollection(localMongoDatabase, collectionsensort2, cloudMongoDatabase, collectionsensorCloud, "Z2","T2");
+        insertCollection(localMongoDatabase, collectionsensorh2, cloudMongoDatabase, collectionsensorCloud, "Z2","H2");
+        insertCollection(localMongoDatabase, collectionsensorl2, cloudMongoDatabase, collectionsensorCloud, "Z2","L2");
+    }
+
+    public static void insertCollection(MongoDatabase localMongoDatabase, String collection, MongoDatabase cloudMongoDatabase, String collectionsensorCloud, String zona, String sensor) {
         MongoCollection<Document> localCollection = localMongoDatabase.getCollection(collection);
-        MongoCollection<Document> cloudMongoCollection = cloudMongoDatabase.getCollection(collectionCloud);
+        MongoCollection<Document> cloudMongoCollection = cloudMongoDatabase.getCollection(collectionsensorCloud);
         List<Document> listat1 = new ArrayList<Document>();
         BasicDBObject criteria = new BasicDBObject();
         criteria.append("Zona", zona);
         criteria.append("Sensor", sensor);
         if(localCollection.countDocuments() == 0) {
+            System.out.println("If");
             localCollection = localMongoDatabase.getCollection(collection);
             for (Document doc : cloudMongoCollection.find(criteria).sort(new BasicDBObject("_id",-1)).limit(MAXDOCUMENTS)) {
                 if (doc != null && !doc.isEmpty())
                     listat1.add(doc);
             }
         }else {
+            System.out.println("Else");
             Document recentDoc = localCollection.find().sort(new BasicDBObject("_id",-1)).first();
-            //	BasicDBObject criteria = new BasicDBObject();
             criteria.append("Data", new BasicDBObject("$gt", recentDoc.getString("Data")));
 
             for (Document doc : cloudMongoCollection.find(criteria)) {
@@ -82,78 +148,24 @@ public class MainGrupo26 {
                     listat1.add(doc);
             }
         }
-        //System.out.println("A gerar novos dados no Mongo Local: zona " + zona + " Sensor " + sensor);
         if(!listat1.isEmpty())
             localCollection.insertMany(listat1);
     }
 
-    public static void main(String args[]) throws InterruptedException, SQLException {
-        System.out.println("Started...");
-        System.out.println("conexao db local");
-        //conexao db local
+    private static void mongotoMysql() throws InterruptedException {
+        System.out.println("Mongo To Mysql");
         MongoClient localMongoClient = new MongoClient(new MongoClientURI(urllocal));
         MongoDatabase localMongoDatabase = localMongoClient.getDatabase(database);
-        System.out.println("conexao db cloud");
-        //conexao db cloud
-        MongoClient cloudMongoClient = new MongoClient(new MongoClientURI(urlcloud));
-        MongoDatabase cloudMongoDatabase = cloudMongoClient.getDatabase(database);
-        MongoToMongo MainGrupo26 = new MongoToMongo();
-        MysqlConnection msConnection = new MysqlConnection();
-        MysqlProfConnection connectionLocal = new MysqlProfConnection("monitorizacao", "root", "", "localhost");
-        MysqlProfConnection connectionNuvem = new MysqlProfConnection("sid2022", "aluno", "aluno", "194.210.86.10");
-        PreparedStatement st = connectionNuvem.getConnectionSQL().prepareStatement("SELECT * FROM sensor");
-        ResultSet rs = st.executeQuery();
-        if(rs.getInt("idzona") == 1 && rs.getString("tipo").equals("H"))  {
-            h1 = new ThreadSensorGrupo26(connectionLocal, collectionsensorh1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"H1","1");
-            h1.start();
-        }
-        if(rs.getInt("idzona") == 1 && rs.getString("tipo").equals("L"))  {
-             l1 = new ThreadSensorGrupo26(connectionLocal, collectionsensorl1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"L1","1");
-            l1.start();
-        }
-        if(rs.getInt("idzona") == 1 && rs.getString("tipo").equals("T"))  {
-            t1 = new ThreadSensorGrupo26(connectionLocal, collectionsensort1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"T1","1");
-           t1.start();
-        }
-        if(rs.getInt("idzona") == 2 && rs.getString("tipo").equals("H"))  {
-             h2 = new ThreadSensorGrupo26(connectionLocal, collectionsensorh2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"H2","2");
-            h2.start();
-        }
-        if(rs.getInt("idzona") == 2 && rs.getString("tipo").equals("L"))  {
-             l2 = new ThreadSensorGrupo26(connectionLocal, collectionsensorl2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"L2","2");
-            l2.start();
-        }
-        if(rs.getInt("idzona") == 2 && rs.getString("tipo").equals("T"))  {
-             t2 = new ThreadSensorGrupo26(connectionLocal, collectionsensort2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"T2","2");
-            t2.start();
-        }
-        sensoresfuncoes = new HashMap<>(){{
-            put("T1", t1.setMessage(message));
-            put("T2", t2.setMessage(message));
-            put("L1", l1.setMessage(message));
-            put("L2", l2.setMessage(message));
-            put("H1", h1.setMessage(message));
-            put("H2", h2.setMessage(message));
-        }};
-        while (true){
-            insertCollection(localMongoDatabase, collectionsensort1, cloudMongoDatabase, collectionsmedicoes, "Z1", "T1");
-            insertCollection(localMongoDatabase, collectionsensort1, cloudMongoDatabase, collectionsmedicoes, "Z1", "T1");
-            insertCollection(localMongoDatabase, collectionsensorh1, cloudMongoDatabase, collectionsmedicoes, "Z1", "H1");
-            insertCollection(localMongoDatabase, collectionsensorl1, cloudMongoDatabase, collectionsmedicoes, "Z1", "L1");
-            insertCollection(localMongoDatabase, collectionsensort2, cloudMongoDatabase, collectionsmedicoes, "Z2", "T2");
-            insertCollection(localMongoDatabase, collectionsensorh2, cloudMongoDatabase, collectionsmedicoes, "Z2", "H2");
-            insertCollection(localMongoDatabase, collectionsensorl2, cloudMongoDatabase, collectionsmedicoes, "Z2", "L2");
-            publishDocument(collectionsensort1,"T1",localMongoDatabase);
-            publishDocument(collectionsensort2,"T2",localMongoDatabase);
-            publishDocument(collectionsensorh1,"H1",localMongoDatabase);
-            publishDocument(collectionsensorh2,"H2",localMongoDatabase);
-            publishDocument(collectionsensorl1,"L1",localMongoDatabase);
-            publishDocument(collectionsensorl2,"L2",localMongoDatabase);
-            TimeUnit.SECONDS.sleep(periodo);
-        }
+        publishDocument(collectiont1,"T1",localMongoDatabase);
+        publishDocument(collectiont2,"T2", localMongoDatabase);
+        publishDocument(collectionh1,"H1", localMongoDatabase);
+        publishDocument(collectionh2,"H2", localMongoDatabase);
+        publishDocument(collectionl1,"L1", localMongoDatabase);
+        publishDocument(collectionl2,"L2", localMongoDatabase);
+        Thread.sleep(TEMPOENVIO);
     }
 
-    public static void publishDocument(String collection, String sensor,MongoDatabase localMongoDatabase) {
+    public static void publishDocument(String collection, String sensor, MongoDatabase localMongoDatabase) {
 
         MongoCollection<Document> localCollection = localMongoDatabase.getCollection(collection);
         Document recentDoc = localCollection.find().sort(new BasicDBObject("_id",-1)).first();
@@ -161,10 +173,6 @@ public class MainGrupo26 {
         LocalDateTime datarec1 = datas.get(sensor);
         LocalDateTime dataRecenteMongo = null;
         String dataRecMongo = recentDoc.getString("Data");
-        String rawMsg = "Zona:" + recentDoc.getString("Zona") + ";" + "Sensor:" +
-                recentDoc.getString("Sensor") + ";" + "Data:" + recentDoc.getString("Data") + ";" +
-                "Medicao:" + recentDoc.getString("Medicao");
-        message=rawMsg;
         if(dataRecMongo != null && !dataRecMongo.isEmpty()) {
             dataRecMongo=dataRecMongo.replace("T", " ");
             dataRecMongo=dataRecMongo.replace("Z", "");
@@ -177,11 +185,25 @@ public class MainGrupo26 {
         if(datarec1 != null && dataRecenteMongo != null && dataRecenteMongo.isAfter(datarec1)) {
             System.out.println(datarec1.toString());
             System.out.println(dataRecenteMongo.toString());
-            sensoresfuncoes.get(sensor);
+            publicarMensagem(recentDoc, collection, sensor);
         }else if(datarec1 == null && dataRecenteMongo != null) {
-            sensoresfuncoes.get(sensor);
+            publicarMensagem(recentDoc, collection, sensor);
         }
         datas.put(sensor, dataRecenteMongo);
     }
+
+    private static void publicarMensagem(Document recentDoc, String collection, String sensor) {
+        String rawMsg = "Zona:" + recentDoc.getString("Zona") + ";" + "Sensor:" +
+                recentDoc.getString("Sensor") + ";" + "Data:" + recentDoc.getString("Data") + ";" +
+                "Medicao:" + recentDoc.getString("Medicao");
+        try {
+            messsalists.get(sensor).put(rawMsg);
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+
+
+    }
+
 
 }
