@@ -38,7 +38,7 @@ public class MongoToMQTT {
     private LocalDateTime datal2 = LocalDateTime.now();
     private LocalDateTime datah1 = LocalDateTime.now();
     private LocalDateTime datah2 = LocalDateTime.now();
-    private static final int TEMPOENVIO = 5000;
+    private static final int TEMPOENVIO = 5;
     private static HashMap<String, LocalDateTime> datas = new HashMap<>(){{
         put("T1", null);
         put("T2", null);
@@ -182,6 +182,7 @@ public class MongoToMQTT {
 	    
 		MongoToMQTT mongoMqtt = new MongoToMQTT();
 		while (true) {
+			TimeUnit.SECONDS.sleep(TEMPOENVIO);
 			mongoMqtt.publishDocument(collectiont1,"T1",mongoMqtt.getDatat1(),localMongoDatabase);
 			mongoMqtt.publishDocument(collectiont2,"T2",mongoMqtt.getDatat2(), localMongoDatabase);
 			mongoMqtt.publishDocument(collectionh1,"H1",mongoMqtt.getDatah1(), localMongoDatabase);
@@ -189,7 +190,6 @@ public class MongoToMQTT {
 			mongoMqtt.publishDocument(collectionl1,"L1",mongoMqtt.getDatal1(), localMongoDatabase);
 			mongoMqtt.publishDocument(collectionl2,"L2",mongoMqtt.getDatal2(), localMongoDatabase);
 			System.out.println(datas.get("T1"));
-			Thread.sleep(TEMPOENVIO);
 		}
 	}
 }

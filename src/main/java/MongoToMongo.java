@@ -29,7 +29,7 @@ public class MongoToMongo {
     private static String collectionsensorl2 = "sensorl2";
     private static String collectionsensorCloud = "medicoes2022";
     private static int MAXDOCUMENTS = 12;
-	private static final int TEMPOENVIO = 5000;
+	private static final int TEMPOENVIO = 5;
 
 	public void insertCollection(MongoDatabase localMongoDatabase, String collection, MongoDatabase cloudMongoDatabase, String collectionsensorCloud, String zona, String sensor) {
 		MongoCollection<Document> localCollection = localMongoDatabase.getCollection(collection);
@@ -77,7 +77,7 @@ public class MongoToMongo {
         	mongoToMongo.insertCollection(localMongoDatabase, collectionsensort2, cloudMongoDatabase, collectionsensorCloud, "Z2","T2");
         	mongoToMongo.insertCollection(localMongoDatabase, collectionsensorh2, cloudMongoDatabase, collectionsensorCloud, "Z2","H2");
         	mongoToMongo.insertCollection(localMongoDatabase, collectionsensorl2, cloudMongoDatabase, collectionsensorCloud, "Z2","L2");
-            Thread.sleep(TEMPOENVIO);
-        }
+			TimeUnit.SECONDS.sleep(TEMPOENVIO);
+		}
     }
 }
