@@ -56,8 +56,9 @@ public class MongoToMQTT {
 			mqttClient = new MqttClient(cloudServer,clientId);
 			MqttConnectOptions options = new MqttConnectOptions();
 			options.setAutomaticReconnect(true);
-			options.setCleanSession(false);
+			options.setCleanSession(true);
 			options.setConnectionTimeout(45);
+			options.setKeepAliveInterval(45);
 			mqttClient.connect(options);
 		} catch (MqttException e) {
 			e.printStackTrace();
@@ -182,6 +183,7 @@ public class MongoToMQTT {
 	    MongoDatabase localMongoDatabase = localMongoClient.getDatabase(databaseMongo);
 	    
 		MongoToMQTT mongoMqtt = new MongoToMQTT();
+
 		while (true) {
 			TimeUnit.SECONDS.sleep(TEMPOENVIO);
 			mongoMqtt.publishDocument(collectiont1,"T1",mongoMqtt.getDatat1(),localMongoDatabase);

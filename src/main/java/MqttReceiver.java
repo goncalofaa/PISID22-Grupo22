@@ -27,7 +27,7 @@ public class MqttReceiver implements MqttCallback {
 			MqttConnectOptions options = new MqttConnectOptions();
 			options.setAutomaticReconnect(true);
 			options.setCleanSession(false);
-			options.setConnectionTimeout(60);
+			options.setConnectionTimeout(45);
 			mqttClient.connect(options);
 		} catch (MqttException e) {
 			e.printStackTrace();
