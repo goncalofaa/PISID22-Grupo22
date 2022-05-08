@@ -1,5 +1,3 @@
-import java.util.ArrayDeque;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -12,7 +10,6 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
-import org.eclipse.paho.client.mqttv3.MqttTopic;
 
 public class MqttReceiver implements MqttCallback {
 	public static String CLOUDSERVER = "tcp://broker.mqtt-dashboard.com:1883";
@@ -61,6 +58,14 @@ public class MqttReceiver implements MqttCallback {
 	public void messageArrived(String arg0, MqttMessage arg1) throws Exception {
 		//System.out.println(arg1.toString());
 		messageList.put(arg1.toString());
+	}
+
+	public int getNumberInQueue(){
+		return messageList.size();
+	}
+
+	public BlockingQueue<String> getMessageList(){
+		return messageList;
 	}
 
 }

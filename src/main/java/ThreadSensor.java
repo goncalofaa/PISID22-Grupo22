@@ -79,13 +79,11 @@ public class ThreadSensor extends Thread{
         //noinspection InfiniteLoopStatement
 		SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
 		Date date = new Date(System.currentTimeMillis());
-
-        while (true) {
+		mqttReceiver.getMessageList().clear();
+		while (true) {
     		try {
-
     			String message = mqttReceiver.getMessage();
     			if(!message.equalsIgnoreCase("sensorDown")) {
-			
 	    			String[] messageSplit = message.split(";");
 	    			zona = messageSplit[0].split(":")[1].replace("Z", "");
 	    			sensor = messageSplit[1].split(":")[1];
@@ -182,12 +180,12 @@ public class ThreadSensor extends Thread{
 	    				Timestamp ultimoaviso = rs3.getTimestamp("Data");
     					Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (INTERVALOALERTA8 * 1000)); // vezes 60
     					if(dataatual.after(intervaloAviso)) {
-    						String query1 = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + dataatualPT + "', '" + "0" + "', '" + "8" + "' ,'" + "Nao tem" + "','" + "Alerta do tipo: " + "8" + "', '" + "1" + "','" + "100" + "','" + dataatualPT + "');";
+    						String query1 = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + dataatualPT + "', '" + "0" + "', '" + "8" + "' ,'" + "Nao tem" + "','" + "Alerta do tipo: " + "8" + "', '" + "1" + "','" + "0" + "','" + dataatualPT + "');";
     						System.err.println(query1);
     						connectionLocal.getConnectionSQL().createStatement().executeUpdate(query1);
     					}
 	    			}else{
-	    				String query1 = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + dataatualPT + "', '" + "0" + "', '" + "8" + "' ,'" + "Nao tem" + "','" + "Alerta do tipo: " + "8" + "', '" + "1" + "','" + "100" + "','" + dataatualPT + "');";
+	    				String query1 = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + dataatualPT + "', '" + "0" + "', '" + "8" + "' ,'" + "Nao tem" + "','" + "Alerta do tipo: " + "8" + "', '" + "1" + "','" + "0" + "','" + dataatualPT + "');";
 						System.err.println(query1);
 						connectionLocal.getConnectionSQL().createStatement().executeUpdate(query1);
 	    			}				

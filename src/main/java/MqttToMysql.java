@@ -37,7 +37,7 @@ public class MqttToMysql {
 				System.out.println(datarecentemysql);
 				Timestamp intervaloAviso = new Timestamp(datarecentemysql.getTime() + (TEMPO_SISTEMA_EM_BAIXO * 1000 * 60 )); // vezes 60
 				if(dataatualPT.after(intervaloAviso)) {
-					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + "0" + "', '" + "S" + "', '" + dataatualPT + "', '" + "0" + "', '" + "9" + "' ,'" + "Geral" + "','" + "Sistema em baixo"+ "', '" + 1 + "','" +"100"+ "','" + dataatualPT + "');";
+					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + "0" + "', '" + "S" + "', '" + dataatualPT + "', '" + "0" + "', '" + "9" + "' ,'" + "Geral" + "','" + "Sistema em baixo"+ "', '" + 1 + "','" +"0"+ "','" + dataatualPT + "');";
 					System.err.println(query);
 					connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 				}

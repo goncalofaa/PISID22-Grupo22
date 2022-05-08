@@ -81,10 +81,10 @@ public class MongoToMQTT {
 	}
 
 	public void publishDocument(String collection, String sensor,LocalDateTime dataSensor,MongoDatabase localMongoDatabase) {
-		
+
 		MongoCollection<Document> localCollection = localMongoDatabase.getCollection(collection);
 		Document recentDoc = localCollection.find().sort(new BasicDBObject("_id",-1)).first();
-		
+
 		LocalDateTime datarec1 = datas.get(sensor);
 		LocalDateTime dataRecenteMongo = null;
 		String dataRecMongo = recentDoc.getString("Data");
@@ -94,18 +94,18 @@ public class MongoToMQTT {
 			dataRecMongo=dataRecMongo.replace("-", " ");
 			dataRecMongo=dataRecMongo.replace(":", " ");
 			String[] datSplit = dataRecMongo.split(" ");
-			dataRecenteMongo = LocalDateTime.of(Integer.parseInt(datSplit[0]), Integer.parseInt(datSplit[1]), Integer.parseInt(datSplit[2]), 
+			dataRecenteMongo = LocalDateTime.of(Integer.parseInt(datSplit[0]), Integer.parseInt(datSplit[1]), Integer.parseInt(datSplit[2]),
 					Integer.parseInt(datSplit[3]), Integer.parseInt(datSplit[4]), Integer.parseInt(datSplit[5]));
 		}
 		if(datarec1 != null && dataRecenteMongo != null && dataRecenteMongo.isAfter(datarec1)) {
-			System.out.println(datarec1.toString());
-			System.out.println(dataRecenteMongo.toString());
-			enviaMensagemMqtt(recentDoc, collection);
+			enviaMensagemMqtt(recentDoc, collection,"");
 		}else if(datarec1 == null && dataRecenteMongo != null) {
-			enviaMensagemMqtt(recentDoc, collection);
+			enviaMensagemMqtt(recentDoc, collection,"");
+		}else if(datarec1 != null && dataRecenteMongo != null && !dataRecenteMongo.isAfter(datarec1)){
+			enviaMensagemMqtt(recentDoc, collection,"sensorDown");
 		}
-		datas.put(sensor, dataRecenteMongo);	
-    }
+		datas.put(sensor, dataRecenteMongo);
+	}
 	
 	public LocalDateTime getDatat1() {
 		return datat1;
@@ -131,17 +131,18 @@ public class MongoToMQTT {
 		return datah2;
 	}
 
-	public void enviaMensagemMqtt(Document recentDoc, String collection) {
-		String rawMsg = "Zona:" + recentDoc.getString("Zona") + ";" + "Sensor:" +
-				recentDoc.getString("Sensor") + ";" + "Data:" + recentDoc.getString("Data") + ";" +
+	public void enviaMensagemMqtt(Document recentDoc, String collection, String rawMsg) {
+		if(rawMsg.isEmpty()) {
+			rawMsg = "Zona:" + recentDoc.getString("Zona") + ";" + "Sensor:" +
+					recentDoc.getString("Sensor") + ";" + "Data:" + recentDoc.getString("Data") + ";" +
 					"Medicao:" + recentDoc.getString("Medicao");
+		}
 		byte[] payload = rawMsg.getBytes();
-		System.out.println(rawMsg);
-		
-	    MqttMessage msg = new MqttMessage(payload);
-	    msg.setQos(0);
-	    msg.setRetained(false);
-	    try {
+
+		MqttMessage msg = new MqttMessage(payload);
+		msg.setQos(0);
+		msg.setRetained(false);
+		try {
 			mqttClient.publish(collection,msg);
 		} catch (MqttPersistenceException e) {
 			e.printStackTrace();
