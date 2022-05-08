@@ -16,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
@@ -84,24 +85,25 @@ public class MainGrupo26 {
         MysqlProfConnection connectionNuvem = new MysqlProfConnection("sid2022", "aluno", "aluno", "194.210.86.10");
         PreparedStatement st = connectionNuvem.getConnectionSQL().prepareStatement("SELECT * FROM sensor");
         ResultSet rs = st.executeQuery();
+        CyclicBarrier newBarrier = new CyclicBarrier(6);
         while(rs.next()) {
             if(rs.getInt("idzona") == 1 && rs.getString("tipo").equals("H"))  {
-                new ThreadSensorGrupo26(connectionLocal, collectionsensorh1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"H1","1",messsalists.get("H1")).start();
+                new ThreadSensorGrupo26(newBarrier,connectionLocal, collectionsensorh1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"H1","1",messsalists.get("H1")).start();
             }
             if(rs.getInt("idzona") == 1 && rs.getString("tipo").equals("L"))  {
-                new ThreadSensorGrupo26(connectionLocal, collectionsensorl1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"L1","1",messsalists.get("L1")).start();
+                new ThreadSensorGrupo26(newBarrier,connectionLocal, collectionsensorl1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"L1","1",messsalists.get("L1")).start();
             }
             if(rs.getInt("idzona") == 1 && rs.getString("tipo").equals("T"))  {
-                new ThreadSensorGrupo26(connectionLocal, collectionsensort1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"T1","1",messsalists.get("T1")).start();
+                new ThreadSensorGrupo26(newBarrier,connectionLocal, collectionsensort1, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"T1","1",messsalists.get("T1")).start();
             }
             if(rs.getInt("idzona") == 2 && rs.getString("tipo").equals("H"))  {
-                new ThreadSensorGrupo26(connectionLocal, collectionsensorh2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"H2","2",messsalists.get("H2")).start();
+                new ThreadSensorGrupo26(newBarrier,connectionLocal, collectionsensorh2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"H2","2",messsalists.get("H2")).start();
             }
             if(rs.getInt("idzona") == 2 && rs.getString("tipo").equals("L"))  {
-                new ThreadSensorGrupo26(connectionLocal, collectionsensorl2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"L2","2",messsalists.get("L2")).start();
+                new ThreadSensorGrupo26(newBarrier,connectionLocal, collectionsensorl2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"L2","2",messsalists.get("L2")).start();
             }
             if(rs.getInt("idzona") == 2 && rs.getString("tipo").equals("T"))  {
-                new ThreadSensorGrupo26(connectionLocal, collectionsensort2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"T2","2",messsalists.get("T2")).start();
+                new ThreadSensorGrupo26(newBarrier,connectionLocal, collectionsensort2, rs.getInt("limiteinferior"), rs.getInt("limitesuperior"),"T2","2",messsalists.get("T2")).start();
             }
         }
         while(true) {
@@ -196,6 +198,10 @@ public class MainGrupo26 {
         String rawMsg = "Zona:" + recentDoc.getString("Zona") + ";" + "Sensor:" +
                 recentDoc.getString("Sensor") + ";" + "Data:" + recentDoc.getString("Data") + ";" +
                 "Medicao:" + recentDoc.getString("Medicao");
+        SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
+        Date date = new Date(System.currentTimeMillis());
+        //System.out.println(formatter.format(date));
+        System.out.println(rawMsg + " Data Inicio Processamento: " + formatter.format(date));
         try {
             messsalists.get(sensor).put(rawMsg);
         }catch (InterruptedException e){

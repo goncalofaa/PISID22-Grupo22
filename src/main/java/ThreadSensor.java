@@ -79,6 +79,7 @@ public class ThreadSensor extends Thread{
         //noinspection InfiniteLoopStatement
 		SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
 		Date date = new Date(System.currentTimeMillis());
+
 		mqttReceiver.getMessageList().clear();
 		while (true) {
     		try {

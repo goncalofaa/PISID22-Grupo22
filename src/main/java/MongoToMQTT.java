@@ -10,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
@@ -112,6 +113,10 @@ public class MongoToMQTT {
 		MqttMessage msg = new MqttMessage(payload);
 		msg.setQos(0);
 		msg.setRetained(false);
+		SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
+		Date date = new Date(System.currentTimeMillis());
+		//System.out.println(formatter.format(date));
+		System.out.println(rawMsg + " Data Inicio Processamento: " + formatter.format(date));
 		try {
 			mqttClient.publish(collection,msg);
 		} catch (MqttPersistenceException e) {

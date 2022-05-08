@@ -4,9 +4,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 public class ThreadSensorGrupo26 extends Thread{
 	//private MysqlConnection msConnection;
@@ -36,10 +40,11 @@ public class ThreadSensorGrupo26 extends Thread{
 	String zona;
 	String sensor;
 	String data;
+	private CyclicBarrier sensorsBarrier;
 	
 	double auxiliar;
 	
-	public ThreadSensorGrupo26(MysqlProfConnection connectionLocal,  String sensorCollection, int limitesensorinferior, int limitesensorsuperior, String sensor, String zona, BlockingQueue<String> messageList) {
+	public ThreadSensorGrupo26(CyclicBarrier sensorsBarrier,MysqlProfConnection connectionLocal,  String sensorCollection, int limitesensorinferior, int limitesensorsuperior, String sensor, String zona, BlockingQueue<String> messageList) {
 		this.connectionLocal = connectionLocal;
 	//	this.connectionNuvem = connectionNuvem;
 		this.sensorCollection = sensorCollection;
@@ -48,6 +53,7 @@ public class ThreadSensorGrupo26 extends Thread{
 		this.sensor = sensor;
 		this.zona = zona;
 		this.messageList = messageList;
+		this.sensorsBarrier = sensorsBarrier;
 		criarlista();
         String sensor_caracteristicas = sensorCollection.substring(sensorCollection.length() - 2);
         sensorTipo = sensor_caracteristicas.charAt(0);
@@ -57,6 +63,9 @@ public class ThreadSensorGrupo26 extends Thread{
 	@Override
     public void run() {
         //noinspection InfiniteLoopStatement
+		SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
+		Date date = new Date(System.currentTimeMillis());
+
         while (true) {
     		try {
 				message=messageList.take();
@@ -142,7 +151,9 @@ public class ThreadSensorGrupo26 extends Thread{
 		    				}
 	    				}
 	    			}
-	    			
+					date = new Date(System.currentTimeMillis());
+					System.out.println(message + " Data Fim Processamento: " + formatter.format(date));
+					sensorsBarrier.await();
 	    			String query = "INSERT INTO medicao (Zona, Sensor, Data, Valido, Leitura) VALUES ('" + zona + "','" + sensor + "','" + data + "','" + valido + "','" + leitura + "');";
 	    			//System.out.println(query);
 	    			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
@@ -153,8 +164,10 @@ public class ThreadSensorGrupo26 extends Thread{
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} catch (BrokenBarrierException e) {
+				e.printStackTrace();
 			}
-        }
+		}
     }
 	
 	double ultimo_valido = -276;
