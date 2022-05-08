@@ -33,7 +33,7 @@ public class ThreadSensor extends Thread{
 	private char sensorTipo;
 	private double margem_outlier;
 	private final int KEEPALIVE = 45;
-	private final int INTERVALOALERTA8 = 60;
+	private final int INTERVALOALERTA8 = 1;
 	private CyclicBarrier sensorsBarrier;
 
 	List<Integer> outliers = new ArrayList<>();
@@ -170,27 +170,19 @@ public class ThreadSensor extends Thread{
 	    			System.err.println("novo insert " + sensorCollection + "  " + formatter.format(date));
 	    			
     			}else {
-	    			PreparedStatement st3 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM alerta WHERE Sensor = ? and TipoAlerta = ? ORDER BY Data DESC LIMIT 1");
+	    			PreparedStatement st3 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM alerta WHERE Sensor = ? and TipoAlerta = ? AND Data >= now() - interval "+INTERVALOALERTA8+" minute ORDER BY Data DESC LIMIT 1");
 	    			st3.setString(1, sensor);
 	    			st3.setString(2, "8");
 	    			ResultSet rs3 = st3.executeQuery();
 	    			Timestamp dataatualPT = new Timestamp(System.currentTimeMillis());
-	    			Timestamp dataatual = new Timestamp(System.currentTimeMillis() + (1000 * 60 * 60));
-	    			if(rs3.next()) {
-	    				Timestamp ultimoaviso = rs3.getTimestamp("Data");
-    					Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (INTERVALOALERTA8 * 1000)); // vezes 60
-    					if(dataatual.after(intervaloAviso)) {
-    						String query1 = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + dataatualPT + "', '" + "0" + "', '" + "8" + "' ,'" + "Nao tem" + "','" + "Alerta do tipo: " + "8" + "', '" + "1" + "','" + "0" + "','" + dataatualPT + "');";
-    						System.err.println(query1);
-    						connectionLocal.getConnectionSQL().createStatement().executeUpdate(query1);
-    					}
-	    			}else{
+	    			if(!rs3.next()) {
 	    				String query1 = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + dataatualPT + "', '" + "0" + "', '" + "8" + "' ,'" + "Nao tem" + "','" + "Alerta do tipo: " + "8" + "', '" + "1" + "','" + "0" + "','" + dataatualPT + "');";
 						System.err.println(query1);
 						connectionLocal.getConnectionSQL().createStatement().executeUpdate(query1);
-	    			}				
+	    			}
+	    			sensorsBarrier.await();
     			}
-
+    			
 
 			} catch (SQLException | InterruptedException | BrokenBarrierException e) {
 				// TODO Auto-generated catch block
@@ -247,7 +239,7 @@ public class ThreadSensor extends Thread{
 	
 	public int verificacao_validade(double medicao, String sensor) {
 		//verifica��o se os dados est�o corretos, provavelmente em trigger
-		if(limitesensorsuperior < medicao || limitesensorinferior > medicao || (sensor.contains("H") && medicao<0) || (sensor.contains("L") && medicao<0)) {
+		if(limitesensorsuperior < medicao || limitesensorinferior > medicao || (sensor.contains("H") && medicao<0) || (sensor.contains("L") && medicao<0) || (sensor.contains("H") && medicao>100)) {
 			return 1; // inv�lido
 		}else {
 			return 0; // v�lido
@@ -322,7 +314,7 @@ public class ThreadSensor extends Thread{
 		//limpar a lista e criar uma nova
 		outliers.clear();
 		criarlista();
-		String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "7" + "' ,'" + "Cultura Geral" + "','" + "Alerta Outlier, medi��o errada do sensor"+ "', '" + 98 + "','" + 0 + "','" + data + "');";
+		String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "7" + "' ,'" + "Cultura Geral" + "','" + "Alerta Outlier, medi��o errada do sensor"+ "', '" + 1 + "','" + 0 + "','" + data + "');";
 		//System.err.println(query);
 		connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 		

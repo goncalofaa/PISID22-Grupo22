@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MongoToMQTT {
 
-    private static String urllocal = "mongodb://localhost:27019,localhost:25019,localhost:23019/?replicaSet=replicaImdb";
+    private static String urllocal = "mongodb://localhost:27019,localhost:25019,localhost:23019/?replicaSet=replicaimdb";
     private static String databaseMongo = "sid2022";
     
     private IMqttClient mqttClient;
@@ -32,12 +32,6 @@ public class MongoToMQTT {
     private static String collectionh2 = "sensorh2";
     private static String collectionl1 = "sensorl1";
     private static String collectionl2 = "sensorl2";
-    private LocalDateTime datat1 = LocalDateTime.now();
-    private LocalDateTime datat2 = LocalDateTime.now();
-    private LocalDateTime datal1 = LocalDateTime.now();
-    private LocalDateTime datal2 = LocalDateTime.now();
-    private LocalDateTime datah1 = LocalDateTime.now();
-    private LocalDateTime datah2 = LocalDateTime.now();
     private static final int TEMPOENVIO = 5;
     private static HashMap<String, LocalDateTime> datas = new HashMap<>(){{
         put("T1", null);
@@ -47,8 +41,6 @@ public class MongoToMQTT {
         put("H1", null);
         put("H2", null);
     }};
-    
-    
     
     public MongoToMQTT() {
 		String clientId = UUID.randomUUID().toString();
@@ -81,7 +73,7 @@ public class MongoToMQTT {
 		this.cloudServer = cloudServer;
 	}
 
-	public void publishDocument(String collection, String sensor,LocalDateTime dataSensor,MongoDatabase localMongoDatabase) {
+	public void publishDocument(String collection, String sensor,MongoDatabase localMongoDatabase) {
 
 		MongoCollection<Document> localCollection = localMongoDatabase.getCollection(collection);
 		Document recentDoc = localCollection.find().sort(new BasicDBObject("_id",-1)).first();
@@ -108,29 +100,6 @@ public class MongoToMQTT {
 		datas.put(sensor, dataRecenteMongo);
 	}
 	
-	public LocalDateTime getDatat1() {
-		return datat1;
-	}
-
-	public LocalDateTime getDatat2() {
-		return datat2;
-	}
-
-	public LocalDateTime getDatal1() {
-		return datal1;
-	}
-
-	public LocalDateTime getDatal2() {
-		return datal2;
-	}
-
-	public LocalDateTime getDatah1() {
-		return datah1;
-	}
-
-	public LocalDateTime getDatah2() {
-		return datah2;
-	}
 
 	public void enviaMensagemMqtt(Document recentDoc, String collection, String rawMsg) {
 		if(rawMsg.isEmpty()) {
@@ -151,29 +120,6 @@ public class MongoToMQTT {
 			e.printStackTrace();
 		}
 	}
-//	public void obterDataMaisRecenteSensores() {
-//		LocalDateTime dataRecenteMongo = null;
-//		String dataRecMongo = recentDoc.getString("Data");
-//		if(dataRecMongo != null && !dataRecMongo.isEmpty()) {
-//			dataRecMongo=dataRecMongo.replace("T", " ");
-//			dataRecMongo=dataRecMongo.replace("Z", "");
-//			dataRecMongo=dataRecMongo.replace("-", " ");
-//			dataRecMongo=dataRecMongo.replace(":", " ");
-//			String[] datSplit = dataRecMongo.split(" ");
-//			dataRecenteMongo = LocalDateTime.of(Integer.parseInt(datSplit[0]), Integer.parseInt(datSplit[1]), Integer.parseInt(datSplit[2]), 
-//					Integer.parseInt(datSplit[3]), Integer.parseInt(datSplit[4]), Integer.parseInt(datSplit[5]));
-//		}
-//
-//		if(dataRecenteMedicoesMysql != null && dataRecenteMongo != null && dataRecenteMedicoesMysql.isAfter(dataRecenteMongo)) {
-//			//nao envia para mqtt
-//		}else if(dataRecenteMedicoesMysql != null && dataRecenteMongo != null && dataRecenteMedicoesMysql.isBefore(dataRecenteMongo)) {
-//			//envia para mqtt
-//			enviaMensagemMqtt(recentDoc, collection);
-//		}else if(dataRecenteMedicoesMysql == null && dataRecenteMongo != null) {
-//			//envia para mqtt
-//			enviaMensagemMqtt(recentDoc, collection);
-//		}
-//	}
     
 	public static void main(String[] args) throws MqttException, InterruptedException {
 		
@@ -185,14 +131,13 @@ public class MongoToMQTT {
 		MongoToMQTT mongoMqtt = new MongoToMQTT();
 
 		while (true) {
+			mongoMqtt.publishDocument(collectiont1,"T1",localMongoDatabase);
+			mongoMqtt.publishDocument(collectiont2,"T2", localMongoDatabase);
+			mongoMqtt.publishDocument(collectionh1,"H1", localMongoDatabase);
+			mongoMqtt.publishDocument(collectionh2,"H2", localMongoDatabase);
+			mongoMqtt.publishDocument(collectionl1,"L1", localMongoDatabase);
+			mongoMqtt.publishDocument(collectionl2,"L2", localMongoDatabase);
 			TimeUnit.SECONDS.sleep(TEMPOENVIO);
-			mongoMqtt.publishDocument(collectiont1,"T1",mongoMqtt.getDatat1(),localMongoDatabase);
-			mongoMqtt.publishDocument(collectiont2,"T2",mongoMqtt.getDatat2(), localMongoDatabase);
-			mongoMqtt.publishDocument(collectionh1,"H1",mongoMqtt.getDatah1(), localMongoDatabase);
-			mongoMqtt.publishDocument(collectionh2,"H2",mongoMqtt.getDatah2(), localMongoDatabase);
-			mongoMqtt.publishDocument(collectionl1,"L1",mongoMqtt.getDatal1(), localMongoDatabase);
-			mongoMqtt.publishDocument(collectionl2,"L2",mongoMqtt.getDatal2(), localMongoDatabase);
-			System.out.println(datas.get("T1"));
 		}
 	}
 }
