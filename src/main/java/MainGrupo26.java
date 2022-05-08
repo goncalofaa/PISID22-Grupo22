@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 public class MainGrupo26 {
 
     private static String urlcloud = "mongodb://root:teste124@194.210.86.10:27017/?authSource=admin";
-    private static String urllocal = "mongodb://localhost:27019,localhost:25019,localhost:23019/?replicaSet=replicaimdb";
+    private static String urllocal = "mongodb://localhost:27019,localhost:25019,localhost:23019/?replicaSet=replicaImdb";
     private static String database="sid2022";
     private static String collectionsensort1 = "sensort1";
     private static String collectionsensort2 = "sensort2";
@@ -74,7 +74,7 @@ public class MainGrupo26 {
         put("H2", new LinkedBlockingDeque<>());
     }};
 
-    private static final int TEMPOENVIO = 5100;
+    private static final int TEMPOENVIO = 5000;
     private static String collectionsensorCloud = "medicoes2022";
     private static int MAXDOCUMENTS = 12;
 
@@ -111,7 +111,7 @@ public class MainGrupo26 {
     }
 
     public static void mongotoMongo(){
-        System.out.println("Mongo To Mongo");
+        //System.out.println("Mongo To Mongo");
         MongoClient localMongoClient = new MongoClient(new MongoClientURI(urllocal));
         MongoDatabase localMongoDatabase = localMongoClient.getDatabase(database);
         MongoClient cloudMongoClient = new MongoClient(new MongoClientURI(urlcloud));
@@ -132,14 +132,14 @@ public class MainGrupo26 {
         criteria.append("Zona", zona);
         criteria.append("Sensor", sensor);
         if(localCollection.countDocuments() == 0) {
-            System.out.println("If");
+            //System.out.println("If");
             localCollection = localMongoDatabase.getCollection(collection);
             for (Document doc : cloudMongoCollection.find(criteria).sort(new BasicDBObject("_id",-1)).limit(MAXDOCUMENTS)) {
                 if (doc != null && !doc.isEmpty())
                     listat1.add(doc);
             }
         }else {
-            System.out.println("Else");
+            //System.out.println("Else");
             Document recentDoc = localCollection.find().sort(new BasicDBObject("_id",-1)).first();
             criteria.append("Data", new BasicDBObject("$gt", recentDoc.getString("Data")));
 
@@ -153,7 +153,7 @@ public class MainGrupo26 {
     }
 
     private static void mongotoMysql() throws InterruptedException {
-        System.out.println("Mongo To Mysql");
+        //System.out.println("Mongo To Mysql");
         MongoClient localMongoClient = new MongoClient(new MongoClientURI(urllocal));
         MongoDatabase localMongoDatabase = localMongoClient.getDatabase(database);
         publishDocument(collectiont1,"T1",localMongoDatabase);
@@ -183,8 +183,8 @@ public class MainGrupo26 {
                     Integer.parseInt(datSplit[3]), Integer.parseInt(datSplit[4]), Integer.parseInt(datSplit[5]));
         }
         if(datarec1 != null && dataRecenteMongo != null && dataRecenteMongo.isAfter(datarec1)) {
-            System.out.println(datarec1.toString());
-            System.out.println(dataRecenteMongo.toString());
+            //System.out.println(datarec1.toString());
+            //System.out.println(dataRecenteMongo.toString());
             publicarMensagem(recentDoc, collection, sensor);
         }else if(datarec1 == null && dataRecenteMongo != null) {
             publicarMensagem(recentDoc, collection, sensor);

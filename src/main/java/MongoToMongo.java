@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class MongoToMongo {
 	
     private static String urlcloud = "mongodb://root:teste124@194.210.86.10:27017/?authSource=admin";
-    private static String urllocal = "mongodb://localhost:27019,localhost:25019,localhost:23019/?replicaSet=replicaimdb";
+    private static String urllocal = "mongodb://localhost:27019,localhost:25019,localhost:23019/?replicaSet=replicaImdb";
     private static String database="sid2022";
     private static String collectionsensort1 = "sensort1";
     private static String collectionsensort2 = "sensort2";
@@ -29,7 +29,7 @@ public class MongoToMongo {
     private static String collectionsensorl2 = "sensorl2";
     private static String collectionsensorCloud = "medicoes2022";
     private static int MAXDOCUMENTS = 12;
-	private static final int TEMPOENVIO = 2;
+	private static final int TEMPOENVIO = 0;
 
 	public void insertCollection(MongoDatabase localMongoDatabase, String collection, MongoDatabase cloudMongoDatabase, String collectionsensorCloud, String zona, String sensor) {
 		MongoCollection<Document> localCollection = localMongoDatabase.getCollection(collection);

@@ -83,6 +83,7 @@ public class ThreadSensor extends Thread{
 		while (true) {
     		try {
     			String message = mqttReceiver.getMessage();
+				String dataentrada= String.valueOf(new Timestamp(System.currentTimeMillis()));
     			if(!message.equalsIgnoreCase("sensorDown")) {
 	    			String[] messageSplit = message.split(";");
 	    			zona = messageSplit[0].split(":")[1].replace("Z", "");
@@ -97,7 +98,7 @@ public class ThreadSensor extends Thread{
 //	    	        System.out.println("LEITURA: " + leitura);
 	    			// Deve estar errado, but i tried
 	    			//se calhar n�o � preciso percurrer sempre isto pq as margens n�o vao estar sempre a ser alteradas e tamb�m a zona � sempre a mesma.
-	    			
+
 	    			st = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM parametrozona");
 	    			rs = st.executeQuery();
 	    			auxiliar = ultimo_avaliado;
@@ -112,15 +113,15 @@ public class ThreadSensor extends Thread{
 	    					}
 	    					if(sensorTipo == 'h') {
 	    						margem_outlier = rs.getDouble("MargemOutlierHumidade");
-	    						
+
 	    					}
 	    				}
 	    			}
-	    			double dado = arredondamento(Double.parseDouble(leitura)); 
+	    			double dado = arredondamento(Double.parseDouble(leitura));
 	    			leitura = Double.toString(dado);
-	    			
+
 	    			verificar_outlier(leitura, sensor);
-//	    			
+//
 //	    			System.out.println("LEITURA COM ARREDONDAMENTO: " + leitura);
 	    			//Connection toMySql2 = (Connection) msConnection; //deve dar com a conec��o em cima
 	    			st = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM cultura");
@@ -156,19 +157,19 @@ public class ThreadSensor extends Thread{
 				    				cultura.setLimiteTempMin(rs1.getDouble("LimiteTemperaturaMin"));
 				    				cultura.setIntervaloAviso(rs1.getInt("IntervaloAviso"));
 		    	    			}
-		    	    			
+
 			    				verificar_alertas(leitura,cultura);
 		    				}
 	    				}
 	    			}
+					date = new Date(System.currentTimeMillis());
+					System.out.println(message + "| Data Fim Processamento: " + formatter.format(date));
 	    			sensorsBarrier.await();
 	    			String query = "INSERT INTO medicao (Zona, Sensor, Data, Valido, Leitura) VALUES ('" + zona + "','" + sensor + "','" + data + "','" + valido + "','" + leitura + "');";
-	    			System.out.println(query);
+	    			//System.out.println(query);
 	    			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
-	    			
-	    			date = new Date(System.currentTimeMillis());
-	    			System.err.println("novo insert " + sensorCollection + "  " + formatter.format(date));
-	    			
+	    			//System.err.println("novo insert " + sensorCollection + "  " + formatter.format(date));
+
     			}else {
 	    			PreparedStatement st3 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM alerta WHERE Sensor = ? and TipoAlerta = ? AND Data >= now() - interval "+INTERVALOALERTA8+" minute ORDER BY Data DESC LIMIT 1");
 	    			st3.setString(1, sensor);
@@ -177,26 +178,25 @@ public class ThreadSensor extends Thread{
 	    			Timestamp dataatualPT = new Timestamp(System.currentTimeMillis());
 	    			if(!rs3.next()) {
 	    				String query1 = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + dataatualPT + "', '" + "0" + "', '" + "8" + "' ,'" + "Nao tem" + "','" + "Alerta do tipo: " + "8" + "', '" + "1" + "','" + "0" + "','" + dataatualPT + "');";
-						System.err.println(query1);
+						//System.err.println(query1);
 						connectionLocal.getConnectionSQL().createStatement().executeUpdate(query1);
 	    			}
-	    			sensorsBarrier.await();
+					sensorsBarrier.await();
     			}
-    			
-
+				//System.out.println(message + "| Data Fim Processamento: " + new Timestamp(System.currentTimeMillis()) + " | Data Entrada na Thread: " + dataentrada);
 			} catch (SQLException | InterruptedException | BrokenBarrierException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
         }
     }
-	
-	
-	
+
+
+
 	public void verificar_outlier(String leitura, String sensor) throws SQLException {
 //		System.out.println(sensorTipo);
 //		System.err.println("Foi verificar alertas outliers");
-		double dado = Double.parseDouble(leitura); 
+		double dado = Double.parseDouble(leitura);
 		dado = arredondamento(dado);
 		if(margem_outlier != 0) { // isto �, ainda n�o existe um valor atribu�do por isso est� no default
 			//System.err.println("Entrei no margem outlier");
@@ -204,13 +204,13 @@ public class ThreadSensor extends Thread{
 		}
 		verificar_lista_outliers(dado);
 	}
-	
-	
-	
+
+
+
 	public void verificar_alertas(String leitura, Cultura cultura) throws InterruptedException, SQLException {
 //		System.out.println(sensorTipo);
 //		System.out.println("Foi verificar alertas");
-		double dado = Double.parseDouble(leitura); 
+		double dado = Double.parseDouble(leitura);
 		dado = arredondamento(dado);
 //		if(margem_outlier != 0) { // isto �, ainda n�o existe um valor atribu�do por isso est� no default
 //			System.err.println("Entrei no margem outlier");
@@ -227,16 +227,16 @@ public class ThreadSensor extends Thread{
 			if(sensorTipo == 'h') {
 //				System.out.println("Entrei aki alerta humidade");
 //				System.err.println(dado);
-				alertaHumidade(dado, cultura);	
+				alertaHumidade(dado, cultura);
 			}
 		}
 	}
-	
+
 	public static double arredondamento(double medicao) {
 		BigDecimal decimal = new BigDecimal(medicao).setScale(2, RoundingMode.HALF_EVEN);
 		return decimal.doubleValue();
 	}
-	
+
 	public int verificacao_validade(double medicao, String sensor) {
 		//verifica��o se os dados est�o corretos, provavelmente em trigger
 		if(limitesensorsuperior < medicao || limitesensorinferior > medicao || (sensor.contains("H") && medicao<0) || (sensor.contains("L") && medicao<0) || (sensor.contains("H") && medicao>100)) {
@@ -245,15 +245,15 @@ public class ThreadSensor extends Thread{
 			return 0; // v�lido
 		}
 	}
-	
+
 	public void criarlista() {
 		for(int i = 0; i < 12; i++) {
 			outliers.add(0);
 		}
 	}
-	
+
 	int count_Outlier = 0;
-	
+
 	public void verificar_outliers(double medicao, String sensor) {  // adicionar aqui o tipo de sensor ??
 		if(verificacao_validade(medicao, sensor) == 0) {
 			if(ultimo_valido == -276) {
@@ -290,8 +290,8 @@ public class ThreadSensor extends Thread{
 		outliers.add(valido);
 		outliers.remove(0);
 	}
-	
-	
+
+
 	public void verificar_lista_outliers(double medicao) throws SQLException { // da para reduzir codigo se for apenas um if
 		int count_1 = 0;
 		int count_2 = 0;
@@ -307,8 +307,8 @@ public class ThreadSensor extends Thread{
 			alertaoutlier(medicao);
 		}
 	}
-	
-	
+
+
 	private void alertaoutlier(double medicao) throws SQLException {
 		//envia para o mysql o alerta
 		//limpar a lista e criar uma nova
@@ -317,9 +317,9 @@ public class ThreadSensor extends Thread{
 		String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "7" + "' ,'" + "Cultura Geral" + "','" + "Alerta Outlier, medi��o errada do sensor"+ "', '" + 1 + "','" + 0 + "','" + data + "');";
 		//System.err.println(query);
 		connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
-		
+
 	}
-	
+
 	private void alertatemperatura(double medicao, Cultura cultura) throws InterruptedException, SQLException { // estamos a enviar todos os avisos, mudar a ordem
 		//System.err.println("Entrei no alerta e este foi o valor auxiliar: " + auxiliar + "este foi o valor da medicao: " + medicao);
 		if((cultura.getLimiteTempMax() < medicao || cultura.getLimiteTempMin() > medicao) && (cultura.getLimiteTempMax() < auxiliar || cultura.getLimiteTempMin() > auxiliar)) {
@@ -332,7 +332,7 @@ public class ThreadSensor extends Thread{
 			alertaamarelo(cultura, medicao);
 		}
 	}
-	
+
 	private void alertaHumidade(double medicao, Cultura cultura) throws InterruptedException, SQLException { // estamos a enviar todos os avisos, mudar a ordem
 		//System.err.println("Entrei no alerta e este foi o valor auxiliar: " + auxiliar + "este foi o valor da medicao: " + medicao);
 		if((cultura.getLimiteHumMax() < medicao || cultura.getLimiteHumMin() > medicao) && ( cultura.getLimiteHumMax() < auxiliar || cultura.getLimiteHumMin() > auxiliar)) {
@@ -345,7 +345,7 @@ public class ThreadSensor extends Thread{
 			alertaamarelo(cultura, medicao);
 		}
 	}
-	
+
 	private void alertaLuz(double medicao, Cultura cultura) throws InterruptedException, SQLException {
 		//System.err.println("Entrei no alerta e este foi o valor auxiliar: " + auxiliar + "este foi o valor da medicao: " + medicao);
 		if((cultura.getLimiteLuzMax() < medicao || cultura.getLimiteLuzMin() > medicao) && (cultura.getLimiteLuzMax() < auxiliar || cultura.getLimiteLuzMin() > auxiliar)) {
@@ -358,14 +358,14 @@ public class ThreadSensor extends Thread{
 			alertaamarelo(cultura, medicao);
 		}
 	}
-	
+
 	Timestamp datAmarelo;
 	Timestamp IntAmarelo;
 	Timestamp datlaranja;
 	Timestamp Intlaranja;
 	Timestamp datvermelho;
 	Timestamp Intvermelho;
-	
+
 	private void alertavermelho(Cultura cultura, double medicao) throws InterruptedException, SQLException {
 		PreparedStatement st3 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM alerta WHERE Sensor = ? AND IDCultura = ? ORDER BY HoraEscrita DESC LIMIT 1");
 		st3.setString(1, sensor);
@@ -433,8 +433,8 @@ public class ThreadSensor extends Thread{
 			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 		}
 	}
-	
-	private void alertaamarelo(Cultura cultura, double medicao) throws InterruptedException, SQLException {	
+
+	private void alertaamarelo(Cultura cultura, double medicao) throws InterruptedException, SQLException {
 		PreparedStatement st3 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM alerta WHERE Sensor = ? AND IDCultura = ? ORDER BY HoraEscrita DESC LIMIT 1");
 		st3.setString(1, sensor);
 		st3.setInt(2, cultura.getIdCultura());

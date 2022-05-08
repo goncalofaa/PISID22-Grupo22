@@ -60,8 +60,8 @@ public class ThreadSensorGrupo26 extends Thread{
         while (true) {
     		try {
 				message=messageList.take();
-    			System.out.println(message);
-    			if(message != null && !message.isEmpty()){
+				String dataentrada= String.valueOf(new Timestamp(System.currentTimeMillis()));
+				if(!message.equalsIgnoreCase("sensorDown")){
 	    			String[] messageSplit = message.split(";");
 	    			zona = messageSplit[0].split(":")[1].replace("Z", "");
 	    			sensor = messageSplit[1].split(":")[1];
@@ -144,45 +144,10 @@ public class ThreadSensorGrupo26 extends Thread{
 	    			}
 	    			
 	    			String query = "INSERT INTO medicao (Zona, Sensor, Data, Valido, Leitura) VALUES ('" + zona + "','" + sensor + "','" + data + "','" + valido + "','" + leitura + "');";
-	    			System.out.println(query);
+	    			//System.out.println(query);
 	    			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
-    			}else {
-	    			//
-	    			PreparedStatement st3 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM alerta WHERE Sensor = ? and TipoAlerta = ? ORDER BY Data DESC LIMIT 1");
-	    			st3.setString(1, sensor);
-	    			st3.setString(2, "8");
-	    			ResultSet rs3 = st3.executeQuery();
-	    			Timestamp dataatualPT = new Timestamp(System.currentTimeMillis());
-	    			Timestamp dataatual = new Timestamp(System.currentTimeMillis() + (1000 * 60 * 60));
-	    			if(rs3.next()) {
-	    				Timestamp ultimoaviso = rs3.getTimestamp("Data");
-    					Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (INTERVALOALERTA8 * 1000)); // vezes 60
-    					if(dataatual.after(intervaloAviso)) {
-    						String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + dataatualPT + "', '" + "0" + "', '" + "8" + "' ,'" + "Nao tem" + "','" + "Alerta do tipo: " + "8" + "', '" + "1" + "','" + "100" + "','" + dataatualPT + "');";
-    						System.err.println(query);
-    						connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
-    					}
-	    			}else {	    			
-		    			st3 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM medicao WHERE Sensor = ? ORDER BY Data DESC LIMIT 1");
-		    			st3.setString(1, sensor);
-		    			rs3 = st3.executeQuery();
-		    		
-		    			if(rs3.next()) {
-		    				Timestamp ultimoaviso = rs3.getTimestamp("Data");
-	
-	    					Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (KEEPALIVE * 1000)); // vezes 60
-	    					if(dataatual.after(intervaloAviso)) {
-	    						String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + dataatualPT + "', '" + "0" + "', '" + "8" + "' ,'" + "Nao tem" + "','" + "Alerta do tipo: " + "8" + "', '" + "1" + "','" + "100" + "','" + dataatualPT + "');";
-	    						System.err.println(query);
-	    						connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
-	    					}	  
-		    			}
-	    			}
-	    			
-	    			//
     			}
-    			
-				Thread.sleep(100);
+				//System.out.println(message + "| Data Fim Processamento: " + new Timestamp(System.currentTimeMillis()) + " | Data Entrada na Thread: " + dataentrada);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			} catch (SQLException e) {
@@ -207,7 +172,7 @@ public class ThreadSensorGrupo26 extends Thread{
 		double dado = Double.parseDouble(leitura); 
 		dado = arredondamento(dado);
 		if(margem_outlier != 0) { // isto é, ainda não existe um valor atribuído por isso está no default
-			System.err.println("Entrei no margem outlier");
+			//System.err.println("Entrei no margem outlier");
 			verificar_outliers(dado);
 		}
 		verificar_lista_outliers(dado);
@@ -247,10 +212,10 @@ public class ThreadSensorGrupo26 extends Thread{
 	
 	public int verificacao_validade(double medicao) {
 		//verificação se os dados estão corretos, provavelmente em trigger
-		
-		
-		
-		if(limitesensorsuperior < medicao || limitesensorinferior > medicao) {
+
+
+
+		if(limitesensorsuperior < medicao || limitesensorinferior > medicao || (sensor.contains("H") && medicao<0) || (sensor.contains("L") && medicao<0) || (sensor.contains("H") && medicao>100)) {
 			return 1; // inválido
 		}else {
 			return 0; // válido
@@ -271,7 +236,7 @@ public class ThreadSensorGrupo26 extends Thread{
 				ultimo_valido = medicao;
 			}
 			double diferenca = Math.abs(ultimo_valido - medicao);
-			System.out.println("Diferença - " + diferenca );
+			//System.out.println("Diferença - " + diferenca );
 			if(count_Outlier >= 2) {
 				double diferenca2 = Math.abs(ultimo_avaliado - medicao);
 				if(diferenca2 < margem_outlier) {
@@ -297,7 +262,7 @@ public class ThreadSensorGrupo26 extends Thread{
 		}
 		ultimo_avaliado = medicao;
 		//não há concorrencia por isso acho que pode ficar assim
-		System.err.println("valido = " + valido);
+		//System.err.println("valido = " + valido);
 		outliers.add(valido);
 		outliers.remove(0);
 	}
@@ -325,14 +290,14 @@ public class ThreadSensorGrupo26 extends Thread{
 		//limpar a lista e criar uma nova
 		outliers.clear();
 		criarlista();
-		String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "7" + "' ,'" + null + "','" + "Alerta Outlier, medição errada do sensor"+ "', '" + 1000 + "','" + 0 + "','" + data + "');";
-		System.err.println(query);
+		String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "7" + "' ,'" + "Geral" + "','" + "Alerta Outlier, medição errada do sensor"+ "', '" + 1 + "','" + 0 + "','" + data + "');";
+		//System.err.println(query);
 		connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 		
 	}
 	
 	private void alertatemperatura(double medicao, Cultura cultura) throws InterruptedException, SQLException { // estamos a enviar todos os avisos, mudar a ordem
-		System.err.println("Entrei no alerta e este foi o valor auxiliar: " + auxiliar + "este foi o valor da medicao: " + medicao);
+		//System.err.println("Entrei no alerta e este foi o valor auxiliar: " + auxiliar + "este foi o valor da medicao: " + medicao);
 		int PertoMinTemp = (int) ((cultura.getAvisoTempMin() +(cultura.getLimiteTempMax() - cultura.getAvisoTempMin()))*0.80);
 		int PertoMaxTemp = (int) ((cultura.getAvisoTempMin() +(cultura.getLimiteTempMax() - cultura.getAvisoTempMin()))* 0.20);
 		
@@ -347,7 +312,7 @@ public class ThreadSensorGrupo26 extends Thread{
 	}
 	
 	private void alertaHumidade(double medicao, Cultura cultura) throws InterruptedException, SQLException { // estamos a enviar todos os avisos, mudar a ordem
-		System.err.println("Entrei no alerta e este foi o valor auxiliar: " + auxiliar + "este foi o valor da medicao: " + medicao);
+		//System.err.println("Entrei no alerta e este foi o valor auxiliar: " + auxiliar + "este foi o valor da medicao: " + medicao);
 		int PertoMinHum = (int) ((cultura.getAvisoHumMin() +(cultura.getLimiteHumMax() - cultura.getAvisoHumMin()))*0.80);
 		int PertoMaxHum = (int) ((cultura.getAvisoHumMin() +(cultura.getLimiteHumMax() - cultura.getAvisoHumMin()))* 0.20);
 		if(cultura.getLimiteHumMax() < medicao || cultura.getLimiteHumMin() > medicao)  {
@@ -360,7 +325,7 @@ public class ThreadSensorGrupo26 extends Thread{
 	}
 	
 	private void alertaLuz(double medicao, Cultura cultura) throws InterruptedException, SQLException {
-		System.err.println("Entrei no alerta e este foi o valor auxiliar: " + auxiliar + "este foi o valor da medicao: " + medicao);
+		//System.err.println("Entrei no alerta e este foi o valor auxiliar: " + auxiliar + "este foi o valor da medicao: " + medicao);
 		
 		int PertoMinLuz = (int) ((cultura.getAvisoLuzMin() +(cultura.getLimiteLuzMax() - cultura.getAvisoLuzMin()))*0.80);
 		int PertoMaxLuz = (int) ((cultura.getAvisoLuzMin() +(cultura.getLimiteLuzMax() - cultura.getAvisoLuzMin()))* 0.20);
@@ -386,7 +351,7 @@ public class ThreadSensorGrupo26 extends Thread{
 		Timestamp dataatualPT = new Timestamp(System.currentTimeMillis());;
 		
 		String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "3" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta vermelho do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
-		System.err.println(query);
+		//System.err.println(query);
 		connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 	}
 
@@ -403,25 +368,25 @@ public class ThreadSensorGrupo26 extends Thread{
 			Timestamp ultimoaviso = rs3.getTimestamp("HoraEscrita");
 			int ultimoTipoAviso = rs3.getInt("TipoAlerta");
 			if(ultimoTipoAviso == 1) {
-				System.out.println("dataAtual = " + dataatual+ " "+cultura.getIdCultura());
-				System.out.println("ultimo aviso = " + ultimoaviso+ " "+cultura.getIdCultura());
+				//System.out.println("dataAtual = " + dataatual+ " "+cultura.getIdCultura());
+				//System.out.println("ultimo aviso = " + ultimoaviso+ " "+cultura.getIdCultura());
 				Timestamp intervaloAviso = new Timestamp(ultimoaviso.getTime() + (cultura.getIntervaloAviso() * 1000 *60)); // vezes 60
-				System.out.println("intervalo aviso = " + intervaloAviso + " "+cultura.getIdCultura());
+				//System.out.println("intervalo aviso = " + intervaloAviso + " "+cultura.getIdCultura());
 				if(dataatual.after(intervaloAviso)) {
 					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
-					System.err.println(query);
+					//System.err.println(query);
 					connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 				}
 			}
 			else {
 				String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
-				System.err.println(query);
+				//System.err.println(query);
 				connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 			}
 		}
 		else {
 			String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + data + "', '" + medicao + "', '" + "1" + "' ,'" + cultura.getNomeCultura() + "','" + "Alerta amarelo do tipo: " + sensorTipo + "', '" + cultura.getIdUtilizador() + "','" + cultura.getIdCultura() + "','" + dataatualPT + "');";
-			System.err.println(query);
+			//System.err.println(query);
 			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 		}
 	}
