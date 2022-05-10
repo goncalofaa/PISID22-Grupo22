@@ -103,6 +103,7 @@ public class ThreadSensor extends Thread{
 	    			st = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM parametrozona");
 	    			rs = st.executeQuery();
 	    			auxiliar = ultimo_avaliado;
+					margem_outlier=0;
 	    			while(rs.next()) {
 	    				int idzona =rs.getInt("IDZona");
 	    				if (idzona == sensorZona) {
@@ -202,6 +203,8 @@ public class ThreadSensor extends Thread{
 		if(margem_outlier != 0) { // isto �, ainda n�o existe um valor atribu�do por isso est� no default
 			//System.err.println("Entrei no margem outlier");
 			verificar_outliers(dado, sensor);
+		}else {
+			verificacao_validade(dado,sensor);
 		}
 		verificar_lista_outliers(dado);
 	}
