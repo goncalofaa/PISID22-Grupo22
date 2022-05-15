@@ -39,24 +39,24 @@ public class MongoToMongo {
 		BasicDBObject criteria = new BasicDBObject();
 		criteria.append("Zona", zona);
 		criteria.append("Sensor", sensor);
-		
-		if(localCollection.countDocuments() == 0) {
-			localCollection = localMongoDatabase.getCollection(collection);
-			for (Document doc : cloudMongoCollection.find(criteria).sort(new BasicDBObject("_id",-1)).limit(MAXDOCUMENTS)) {
-				if (doc != null && !doc.isEmpty())
-					listat1.add(doc);
+
+			if(localCollection.countDocuments() == 0) {
+				localCollection = localMongoDatabase.getCollection(collection);
+				for (Document doc : cloudMongoCollection.find(criteria).sort(new BasicDBObject("_id",-1)).limit(MAXDOCUMENTS)) {
+					if (doc != null && !doc.isEmpty() && doc.get("Medicao")!=null)
+						listat1.add(doc);
+				}
+			}else {
+				Document recentDoc = localCollection.find().sort(new BasicDBObject("_id",-1)).first();
+				criteria.append("Data", new BasicDBObject("$gt", recentDoc.getString("Data")));
+
+				for (Document doc : cloudMongoCollection.find(criteria)) {
+					if (doc != null && !doc.isEmpty() && doc.get("Medicao")!=null)
+						listat1.add(doc);
+				}
 			}
-		}else {
-			Document recentDoc = localCollection.find().sort(new BasicDBObject("_id",-1)).first();
-			criteria.append("Data", new BasicDBObject("$gt", recentDoc.getString("Data")));
-			
-			for (Document doc : cloudMongoCollection.find(criteria)) {
-				if (doc != null && !doc.isEmpty())
-					listat1.add(doc);
-			}
-		}
-		if(!listat1.isEmpty())
-			localCollection.insertMany(listat1);
+			if(!listat1.isEmpty())
+				localCollection.insertMany(listat1);
 	}
 
     public static void main(String args[]) throws InterruptedException {
@@ -80,4 +80,5 @@ public class MongoToMongo {
 			TimeUnit.SECONDS.sleep(TEMPOENVIO);
 		}
     }
+
 }
