@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MongoToMQTT {
 
-    private static String urllocal = "mongodb://localhost:27019,localhost:25019,localhost:23019/?replicaSet=replicaImdb";
+    private static String urllocal = "mongodb://localhost:27019,localhost:25019,localhost:23019/?replicaSet=replicaimdb";
     private static String databaseMongo = "sid2022";
     
     private IMqttClient mqttClient;

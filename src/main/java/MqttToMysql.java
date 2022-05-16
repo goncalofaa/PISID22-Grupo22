@@ -37,6 +37,13 @@ public class MqttToMysql {
 				System.out.println(datarecentemysql);
 				Timestamp intervaloAviso = new Timestamp(datarecentemysql.getTime() + (TEMPO_SISTEMA_EM_BAIXO * 1000 * 60 )); // vezes 60
 				if(dataatualPT.after(intervaloAviso)) {
+					PreparedStatement st1 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM utilizador INNER JOIN cultura ON utilizador.IDUtilizador = cultura.IDUtilizador WHERE utilizador.TipoUtilizador = 'I'");
+					ResultSet rs2 = st1.executeQuery();
+					while(rs2.next()) {
+						String id = rs2.getString(1);
+						String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + "0" + "', '" + "S" + "', '" + dataatualPT + "', '" + "0" + "', '" + "9" + "' ,'" + "Geral" + "','" + "Sistema em baixo"+ "', '" + id + "','" +"0"+ "','" + dataatualPT + "');";
+						System.err.println(query);
+					}
 					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + "0" + "', '" + "S" + "', '" + dataatualPT + "', '" + "0" + "', '" + "9" + "' ,'" + "Geral" + "','" + "Sistema em baixo"+ "', '" + 1 + "','" +"0"+ "','" + dataatualPT + "');";
 					System.err.println(query);
 					connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
