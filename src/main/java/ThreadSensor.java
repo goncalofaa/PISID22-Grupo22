@@ -329,10 +329,10 @@ public class ThreadSensor extends Thread{
 		if((cultura.getLimiteTempMax() < medicao || cultura.getLimiteTempMin() > medicao) && (cultura.getLimiteTempMax() < auxiliar || cultura.getLimiteTempMin() > auxiliar)) {
 			alertavermelho(cultura, medicao);
 		}
-		else if(((cultura.getAvisoTempMax() + cultura.getLimiteTempMax()) / 2 < medicao || (cultura.getAvisoTempMin() + cultura.getLimiteTempMin()) / 2 > medicao) && ((cultura.getAvisoTempMax() + cultura.getLimiteTempMax()) / 2 < auxiliar || (cultura.getAvisoTempMin() + cultura.getLimiteTempMin()) / 2 > auxiliar)) {
+		else if(((cultura.getAvisoTempMax() + cultura.getLimiteTempMax()) / 2 < medicao && medicao < cultura.getLimiteTempMax() || (cultura.getAvisoTempMin() + cultura.getLimiteTempMin()) / 2 > medicao && cultura.getLimiteTempMin() < medicao) && ((cultura.getAvisoTempMax() + cultura.getLimiteTempMax()) / 2 < auxiliar || (cultura.getAvisoTempMin() + cultura.getLimiteTempMin()) / 2 > auxiliar)) {
 			alertalaranja(cultura, medicao);
 		}
-		else if((cultura.getAvisoTempMax() < medicao || cultura.getAvisoTempMin() > medicao) && (cultura.getAvisoTempMax() < auxiliar || cultura.getAvisoTempMin() > auxiliar)) {
+		else if((cultura.getAvisoTempMax() < medicao && (cultura.getAvisoTempMax() + cultura.getLimiteTempMax()) / 2 > medicao) || (cultura.getAvisoTempMin() > medicao && (cultura.getAvisoTempMin() + cultura.getLimiteTempMin() / 2) < medicao) && (cultura.getAvisoTempMax() < auxiliar || cultura.getAvisoTempMin() > auxiliar)) {
 			alertaamarelo(cultura, medicao);
 		}
 	}
