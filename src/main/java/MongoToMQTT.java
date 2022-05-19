@@ -116,7 +116,7 @@ public class MongoToMQTT {
 		SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
 		Date date = new Date(System.currentTimeMillis());
 		//System.out.println(formatter.format(date));
-		System.out.println(rawMsg + " Data Inicio Processamento: " + formatter.format(date));
+		//System.out.println(rawMsg + " Data Inicio Processamento: " + formatter.format(date));
 		try {
 			mqttClient.publish(collection,msg);
 		} catch (MqttPersistenceException e) {

@@ -32,7 +32,7 @@ public class ThreadSensor extends Thread{
 	private int sensorZona;
 	private char sensorTipo;
 	private double margem_outlier;
-	private final int KEEPALIVE = 45;
+	private int countSensorDown = 0;
 	private final int INTERVALOALERTA8 = 1;
 	private CyclicBarrier sensorsBarrier;
 
@@ -86,6 +86,7 @@ public class ThreadSensor extends Thread{
     			String message = mqttReceiver.getMessage();
 				String dataentrada= String.valueOf(new Timestamp(System.currentTimeMillis()));
     			if(!message.equalsIgnoreCase("sensorDown")) {
+    				countSensorDown = 0;
 	    			String[] messageSplit = message.split(";");
 	    			zona = messageSplit[0].split(":")[1].replace("Z", "");
 	    			sensor = messageSplit[1].split(":")[1];
@@ -168,22 +169,27 @@ public class ThreadSensor extends Thread{
 					System.out.println(message + "| Data Fim Processamento: " + formatter.format(date));
 	    			sensorsBarrier.await();
 	    			String query = "INSERT INTO medicao (Zona, Sensor, Data, Valido, Leitura) VALUES ('" + zona + "','" + sensor + "','" + data + "','" + valido + "','" + leitura + "');";
-	    			//System.out.println(query);
+	    			System.out.println(query);
 	    			connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 	    			//System.err.println("novo insert " + sensorCollection + "  " + formatter.format(date));
 
     			}else {
-	    			PreparedStatement st3 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM alerta WHERE Sensor = ? and TipoAlerta = ? AND Data >= now() - interval "+INTERVALOALERTA8+" minute ORDER BY Data DESC LIMIT 1");
-	    			st3.setString(1, sensor);
-	    			st3.setString(2, "8");
-	    			ResultSet rs3 = st3.executeQuery();
-	    			Timestamp dataatualPT = new Timestamp(System.currentTimeMillis());
-	    			if(!rs3.next()) {
-	    				String query1 = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + dataatualPT + "', '" + "0" + "', '" + "8" + "' ,'" + "Nao tem" + "','" + "Alerta do tipo: " + "8" + "', '" + "1" + "','" + "0" + "','" + dataatualPT + "');";
-						//System.err.println(query1);
-						connectionLocal.getConnectionSQL().createStatement().executeUpdate(query1);
-	    			}
-					sensorsBarrier.await();
+    				countSensorDown++;
+    				if( countSensorDown > 1) {
+    					countSensorDown = 0;
+		    			PreparedStatement st3 = connectionLocal.getConnectionSQL().prepareStatement("SELECT * FROM alerta WHERE Sensor = ? and TipoAlerta = ? AND Data >= now() - interval "+INTERVALOALERTA8+" minute ORDER BY Data DESC LIMIT 1");
+		    			st3.setString(1, sensor);
+		    			st3.setString(2, "8");
+		    			ResultSet rs3 = st3.executeQuery();
+		    			Timestamp dataatualPT = new Timestamp(System.currentTimeMillis());
+		    			if(!rs3.next()) {
+		    				String query1 = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + zona + "', '" + sensor + "', '" + dataatualPT + "', '" + "0" + "', '" + "8" + "' ,'" + "Nao tem" + "','" + "Alerta do tipo: " + "8" + "', '" + "1" + "','" + "0" + "','" + dataatualPT + "');";
+							//System.err.println(query1);
+							connectionLocal.getConnectionSQL().createStatement().executeUpdate(query1);
+		    			}
+						sensorsBarrier.await();
+						
+    				}
     			}
 				//System.out.println(message + "| Data Fim Processamento: " + new Timestamp(System.currentTimeMillis()) + " | Data Entrada na Thread: " + dataentrada);
 			} catch (SQLException | InterruptedException | BrokenBarrierException e) {

@@ -41,8 +41,10 @@ public class MqttToMysql {
 					ResultSet rs2 = st1.executeQuery();
 					while(rs2.next()) {
 						String id = rs2.getString(1);
-						String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + "0" + "', '" + "S" + "', '" + dataatualPT + "', '" + "0" + "', '" + "9" + "' ,'" + "Geral" + "','" + "Sistema em baixo"+ "', '" + id + "','" +"0"+ "','" + dataatualPT + "');";
+						String nomecultura = rs2.getString("NomeCultura");
+						String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + "0" + "', '" + "S" + "', '" + dataatualPT + "', '" + "0" + "', '" + "9" + "' ,'" + nomecultura + "','" + "Sistema em baixo"+ "', '" + id + "','" +"0"+ "','" + dataatualPT + "');";
 						System.err.println(query);
+						connectionLocal.getConnectionSQL().createStatement().executeUpdate(query);
 					}
 					String query = "INSERT INTO alerta (Zona, Sensor, Data, Leitura, TipoAlerta, Cultura, Mensagem, IDUtilizador, IDCultura, HoraEscrita) VALUES ('" + "0" + "', '" + "S" + "', '" + dataatualPT + "', '" + "0" + "', '" + "9" + "' ,'" + "Geral" + "','" + "Sistema em baixo"+ "', '" + 1 + "','" +"0"+ "','" + dataatualPT + "');";
 					System.err.println(query);
